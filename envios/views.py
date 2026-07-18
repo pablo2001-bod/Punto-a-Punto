@@ -6,7 +6,35 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-# Create your views here.
+#Enviar Notificacion
+def enviar_notificacion(encomienda, asunto, mensaje):
+    correos = {
+        encomienda.cliente.email,
+        encomienda.email_destinatario,
+    }
+
+    for correo in correos:
+        if not correo:
+            continue
+
+        cantidad_enviada = send_mail(
+            asunto,
+            mensaje,
+            getattr(settings, "DEFAULT_FROM_EMAIL", "no-reply@puntoapunto.com"),
+            [correo],
+            fail_silently=True,
+        )
+
+        NotificacionCorreo.objects.create(
+            encomienda=encomienda,
+            destinatario=correo,
+            asunto=asunto,
+            mensaje=mensaje,
+            enviado=cantidad_enviada > 0,
+        )
+
+
+
 def inicio(request):
     return render(request, 'inicio.html')
 
@@ -102,3 +130,130 @@ def guardarSeguro(request):
         )
         messages.success(request, "Seguro registrado correctamente.")
     return redirect("/seguros/listadoSeguro/")
+
+#Encomiendas
+def listadoEncomienda(request):
+    encomiendas = (
+        Encomienda.objects.select_related(
+            "cliente",
+            "oficina_origen",
+            "oficina_destino",
+            "transporte",
+            "seguro",
+        )
+        .all()
+        .order_by("-id_encomienda")
+    )
+    return render(
+        request,
+        "encomiendas/listadoEncomienda.html",
+        {"encomiendas": encomiendas},
+    )
+
+def nuevaEncomienda(request):
+    datos = {
+        "clientes": Cliente.objects.all().order_by("apellidos", "nombres"),
+        "oficinas": Oficina.objects.all().order_by("ciudad", "nombre"),
+        "transportes": Transporte.objects.filter(estado="DISPONIBLE").order_by("placa"),
+        "seguros": Seguro.objects.filter(activo=True).order_by("nombre"),
+    }
+    return render(request, "encomiendas/nuevaEncomienda.html", datos)
+
+def guardarEncomienda(request):
+    if request.method == "POST":
+        cliente = Cliente.objects.get(id_cliente=request.POST["cliente"])
+        oficina_origen = Oficina.objects.get(
+            id_oficina=request.POST["oficina_origen"]
+        )
+        oficina_destino = Oficina.objects.get(
+            id_oficina=request.POST["oficina_destino"]
+        )
+
+        transporte = None
+        if request.POST.get("transporte"):
+            transporte = Transporte.objects.get(
+                id_transporte=request.POST["transporte"]
+            )
+
+        seguro = None
+        if request.POST.get("seguro"):
+            seguro = Seguro.objects.get(id_seguro=request.POST["seguro"])
+
+        encomienda = Encomienda.objects.create(
+            codigo_seguimiento=f"ENC-{uuid.uuid4().hex[:8].upper()}",
+            cliente=cliente,
+            oficina_origen=oficina_origen,
+            oficina_destino=oficina_destino,
+            transporte=transporte,
+            seguro=seguro,
+            nombre_destinatario=request.POST["nombre_destinatario"],
+            cedula_destinatario=request.POST["cedula_destinatario"],
+            email_destinatario=request.POST["email_destinatario"],
+            telefono_destinatario=request.POST["telefono_destinatario"],
+            direccion_destino=request.POST["direccion_destino"],
+            descripcion=request.POST["descripcion"],
+            peso_kg=request.POST["peso_kg"],
+            valor_declarado=request.POST.get("valor_declarado", 0),
+            costo_envio=request.POST.get("costo_envio", 0),
+        )
+
+        asunto = f"Encomienda registrada: {encomienda.codigo_seguimiento}"
+        mensaje_correo = (
+            f"Su encomienda fue registrada correctamente.\n\n"
+            f"Código de seguimiento: {encomienda.codigo_seguimiento}\n"
+            f"Origen: {encomienda.oficina_origen}\n"
+            f"Destino: {encomienda.oficina_destino}\n"
+            f"Estado: {encomienda.get_estado_display()}\n"
+        )
+        enviar_notificacion(encomienda, asunto, mensaje_correo)
+        messages.success(
+            request,
+            f"Encomienda registrada. Código: {encomienda.codigo_seguimiento}",
+        )
+        return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
+    return redirect("/encomiendas/listadoEncomienda/")
+
+def detalleEncomienda(request, id):
+    encomienda = Encomienda.objects.select_related(
+        "cliente",
+        "oficina_origen",
+        "oficina_destino",
+        "transporte",
+        "seguro",
+    ).get(id_encomienda=id)
+    reportes = encomienda.reportes.all().order_by("-fecha_reporte")
+    return render(
+        request,
+        "encomiendas/detalleEncomienda.html",
+        {
+            "encomienda": encomienda,
+            "reportes": reportes,
+        },
+    )
+
+def actualizarEstadoEncomienda(request, id):
+    encomienda = Encomienda.objects.get(id_encomienda=id)
+    if request.method == "POST":
+        encomienda.estado = request.POST["estado"]
+        if encomienda.estado == "ENTREGADA":
+            encomienda.fecha_entrega = timezone.now()
+        encomienda.save()
+        asunto = f"Actualización de encomienda {encomienda.codigo_seguimiento}"
+        mensaje_correo = (
+            f"El estado de su encomienda cambió.\n\n"
+            f"Código: {encomienda.codigo_seguimiento}\n"
+            f"Nuevo estado: {encomienda.get_estado_display()}\n"
+        )
+        enviar_notificacion(encomienda, asunto, mensaje_correo)
+        messages.success(request, "Estado actualizado correctamente.")
+        return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
+    return render(
+        request,
+        "encomiendas/actualizarEstadoEncomienda.html",
+        {
+            "encomienda": encomienda,
+            "estados_encomienda": Encomienda.ESTADOS_ENCOMIENDA,
+        },
+    )
+
+# SEGUIMIENTO

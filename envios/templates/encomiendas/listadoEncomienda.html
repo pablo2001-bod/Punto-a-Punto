@@ -1,0 +1,73 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Encomiendas | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Encomiendas</h2>
+        <p class="text-muted mb-0">Control general de los envíos registrados.</p>
+    </div>
+    <a href="/encomiendas/nuevaEncomienda/" class="btn btn-primary">
+        <i class="bi bi-box-seam"></i> Nueva encomienda
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Cliente</th>
+                        <th>Destinatario</th>
+                        <th>Ruta</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for encomienda in encomiendas %}
+                    <tr>
+                        <td><strong>{{ encomienda.codigo_seguimiento }}</strong></td>
+                        <td>{{ encomienda.cliente }}</td>
+                        <td>{{ encomienda.nombre_destinatario }}</td>
+                        <td>
+                            {{ encomienda.oficina_origen.ciudad }}
+                            <i class="bi bi-arrow-right"></i>
+                            {{ encomienda.oficina_destino.ciudad }}
+                        </td>
+                        <td>
+                            <span class="badge text-bg-primary">
+                                {{ encomienda.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>{{ encomienda.fecha_registro|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="/encomiendas/detalleEncomienda/{{ encomienda.id_encomienda }}/"
+                               class="btn btn-sm btn-outline-primary">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No existen encomiendas registradas.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

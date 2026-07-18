@@ -1,0 +1,150 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Nueva encomienda | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="bi bi-box-seam"></i> Registrar encomienda</h4>
+    </div>
+
+    <div class="card-body p-4">
+        <form action="/encomiendas/guardarEncomienda/" method="post">
+            {% csrf_token %}
+            <h5 class="mb-3">Datos generales</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Cliente remitente</label>
+                    <select name="cliente" class="form-select" required>
+                        <option value="">Seleccione un cliente</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id_cliente }}">
+                            {{ cliente.cedula }} - {{ cliente }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">
+                        El cliente debe estar registrado previamente.
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Oficina de origen</label>
+                    <select name="oficina_origen" class="form-select" required>
+                        <option value="">Seleccione</option>
+                        {% for oficina in oficinas %}
+                        <option value="{{ oficina.id_oficina }}">
+                            {{ oficina.ciudad }} - {{ oficina.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Oficina de destino</label>
+                    <select name="oficina_destino" class="form-select" required>
+                        <option value="">Seleccione</option>
+                        {% for oficina in oficinas %}
+                        <option value="{{ oficina.id_oficina }}">
+                            {{ oficina.ciudad }} - {{ oficina.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Transporte</label>
+                    <select name="transporte" class="form-select">
+                        <option value="">Sin asignar</option>
+                        {% for transporte in transportes %}
+                        <option value="{{ transporte.id_transporte }}">
+                            {{ transporte.placa }} - {{ transporte.get_tipo_display }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Seguro</label>
+                    <select name="seguro" class="form-select">
+                        <option value="">Sin seguro</option>
+                        {% for seguro in seguros %}
+                        <option value="{{ seguro.id_seguro }}">
+                            {{ seguro.nombre }} - ${{ seguro.costo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Datos del destinatario</h5>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Nombre completo</label>
+                    <input type="text" name="nombre_destinatario"
+                           class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Cédula</label>
+                    <input type="text" name="cedula_destinatario"
+                           maxlength="10" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Correo</label>
+                    <input type="email" name="email_destinatario"
+                           class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono_destinatario"
+                           class="form-control" required>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Dirección de entrega</label>
+                    <input type="text" name="direccion_destino"
+                           class="form-control" required>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Información del paquete</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="descripcion" rows="4"
+                              class="form-control" required></textarea>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Peso (kg)</label>
+                    <input type="number" name="peso_kg" step="0.01"
+                           min="0.01" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Valor declarado</label>
+                    <input type="number" name="valor_declarado" step="0.01"
+                           min="0" value="0" class="form-control" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Costo del envío</label>
+                    <input type="number" name="costo_envio" step="0.01"
+                           min="0" value="0" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Registrar encomienda
+                </button>
+                <a href="/encomiendas/listadoEncomienda" class="btn btn-secondary">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

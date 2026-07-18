@@ -78,8 +78,7 @@ class Encomienda(models.Model):
 
     id_encomienda = models.AutoField(primary_key=True)
 
-    codigo_seguimiento = models.CharField(max_length=30, unique=True
-    )
+    codigo_seguimiento = models.CharField(max_length=30, unique=True)
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="encomiendas")
     oficina_origen = models.ForeignKey(Oficina, on_delete=models.CASCADE, related_name="encomiendas_origen")

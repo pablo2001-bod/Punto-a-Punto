@@ -1,0 +1,56 @@
+{% extends "plantillaprincipal.html" %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Actualizar estado
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <p>
+                    <strong>Encomienda:</strong>
+                    {{ encomienda.codigo_seguimiento }}
+                </p>
+                <p>
+                    <strong>Estado actual:</strong>
+                    {{ encomienda.get_estado_display }}
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo estado</label>
+                        <select name="estado" class="form-select" required>
+                            {% for valor, texto in estados_encomienda %}
+                            <option value="{{ valor }}"
+                                {% if encomienda.estado == valor %}selected{% endif %}>
+                                {{ texto }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Actualizar
+                    </button>
+                    <a href="/encomiendas/detalleEncomienda/{{ encomienda.id_encomienda }}"
+                       class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

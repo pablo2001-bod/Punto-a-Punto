@@ -21,4 +21,10 @@ urlpatterns = [
     path("seguros/listadoSeguro/", views.listadoSeguro),
     path("seguros/nuevoSeguro/", views.nuevoSeguro),
     path("seguros/guardarSeguro/", views.guardarSeguro),
+    #Encomiendas
+    path("encomiendas/listadoEncomienda/", views.listadoEncomienda),
+    path("encomiendas/nuevaEncomienda/", views.nuevaEncomienda),
+    path("encomiendas/guardarEncomienda/", views.guardarEncomienda),
+    path("encomiendas/detalleEncomienda/<id>/", views.detalleEncomienda),
+    path("encomiendas/actualizarEstadoEncomienda/<id>/", views.actualizarEstadoEncomienda),
 ]

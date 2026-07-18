@@ -1,0 +1,147 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Detalle de encomienda | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Detalle de encomienda</h2>
+        <p class="text-muted mb-0">{{ encomienda.codigo_seguimiento }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/encomiendas/actualizarEstadoEncomienda/{{ encomienda.id_encomienda }}"
+           class="btn btn-warning">
+            <i class="bi bi-arrow-repeat"></i> Cambiar estado
+        </a>
+        <a href="/encomiendas/nuevoReporte/{{ encomienda.id_encomienda }}"
+           class="btn btn-danger">
+            <i class="bi bi-exclamation-triangle"></i> Registrar novedad
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <strong>Información del envío</strong>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Estado</small>
+                        <span class="badge text-bg-primary fs-6">
+                            {{ encomienda.get_estado_display }}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha de registro</small>
+                        {{ encomienda.fecha_registro|date:"d/m/Y H:i" }}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha de entrega</small>
+                        {{ encomienda.fecha_entrega|date:"d/m/Y H:i"|default:"Pendiente" }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Cliente remitente</small>
+                        {{ encomienda.cliente }}
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Destinatario</small>
+                        {{ encomienda.nombre_destinatario }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Oficina de origen</small>
+                        {{ encomienda.oficina_origen }}
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Oficina de destino</small>
+                        {{ encomienda.oficina_destino }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Dirección de entrega</small>
+                        {{ encomienda.direccion_destino }}
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Teléfono</small>
+                        {{ encomienda.telefono_destinatario }}
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Correo</small>
+                        {{ encomienda.email_destinatario }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Transporte</small>
+                        {{ encomienda.transporte|default:"Sin asignar" }}
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Seguro</small>
+                        {{ encomienda.seguro|default:"Sin seguro" }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Descripción</small>
+                        {{ encomienda.descripcion }}
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted d-block">Peso</small>
+                        {{ encomienda.peso_kg }} kg
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted d-block">Valor</small>
+                        ${{ encomienda.valor_declarado }}
+                    </div>
+                    <div class="col-md-2">
+                        <small class="text-muted d-block">Costo</small>
+                        ${{ encomienda.costo_envio }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Reportes y novedades</strong>
+            </div>
+            <div class="card-body">
+                {% for reporte in reportes %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ reporte.get_tipo_display }}</strong>
+                        {% if reporte.resuelto %}
+                            <span class="badge text-bg-success">Resuelto</span>
+                        {% else %}
+                            <span class="badge text-bg-warning">Pendiente</span>
+                        {% endif %}
+                    </div>
+                    <p class="mb-1">{{ reporte.detalle }}</p>
+                    <small class="text-muted">
+                        {{ reporte.fecha_reporte|date:"d/m/Y H:i" }}
+                    </small>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0">No existen novedades registradas.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="/encomiendas/listadoEncomienda/" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}
