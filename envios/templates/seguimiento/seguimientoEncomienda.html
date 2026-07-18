@@ -1,0 +1,79 @@
+{% extends "plantillaprincipal.html" %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="text-center mb-4">
+            <h2>Seguimiento de encomienda</h2>
+            <p class="text-muted">
+                Ingresa el código entregado al registrar el envío.
+            </p>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="input-group input-group-lg">
+                        <input type="text" name="codigo" class="form-control"
+                               placeholder="Ejemplo: ENC-1234ABCD" required>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if encomienda %}
+        <div class="card shadow-sm border-primary">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ encomienda.codigo_seguimiento }}</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Estado actual</small>
+                        <span class="badge text-bg-primary fs-6">
+                            {{ encomienda.get_estado_display }}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Origen</small>
+                        {{ encomienda.oficina_origen }}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Destino</small>
+                        {{ encomienda.oficina_destino }}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Destinatario</small>
+                        {{ encomienda.nombre_destinatario }}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha de registro</small>
+                        {{ encomienda.fecha_registro|date:"d/m/Y H:i" }}
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha de entrega</small>
+                        {{ encomienda.fecha_entrega|date:"d/m/Y H:i"|default:"Pendiente" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% elif busqueda_realizada %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-circle"></i>
+            No se encontró una encomienda con ese código.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

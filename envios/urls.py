@@ -27,4 +27,6 @@ urlpatterns = [
     path("encomiendas/guardarEncomienda/", views.guardarEncomienda),
     path("encomiendas/detalleEncomienda/<id>/", views.detalleEncomienda),
     path("encomiendas/actualizarEstadoEncomienda/<id>/", views.actualizarEstadoEncomienda),
+    #Seguimiento
+    path("seguimiento/seguimientoEncomienda/", views.seguimientoEncomienda),
 ]

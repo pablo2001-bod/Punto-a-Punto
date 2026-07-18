@@ -257,3 +257,25 @@ def actualizarEstadoEncomienda(request, id):
     )
 
 # SEGUIMIENTO
+
+def seguimientoEncomienda(request):
+    encomienda = None
+    busqueda_realizada = False
+
+    if request.method == "POST":
+        busqueda_realizada = True
+        codigo = request.POST.get("codigo", "").strip()
+
+        encomienda = Encomienda.objects.select_related(
+            "oficina_origen",
+            "oficina_destino",
+        ).filter(codigo_seguimiento__iexact=codigo).first()
+
+    return render(
+        request,
+        "seguimiento/seguimientoEncomienda.html",
+        {
+            "encomienda": encomienda,
+            "busqueda_realizada": busqueda_realizada,
+        },
+    )
