@@ -9,4 +9,8 @@ urlpatterns = [
     path("clientes/listadoCliente/", views.listadoCliente),
     path("clientes/nuevoCliente/", views.nuevoCliente),
     path("clientes/guardarCliente/", views.guardarCliente),
+    #Oficinas
+    path("oficinas/listadoOficina/", views.listadoOficina),
+    path("oficinas/nuevaOficina/", views.nuevaOficina),
+    path("oficinas/guardarOficina/", views.guardarOficina),
 ]
