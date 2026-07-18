@@ -323,3 +323,17 @@ def guardarReporte(request):
         messages.success(request, "Reporte registrado correctamente.")
         return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
     return redirect("reportes/listadoReporte")
+
+#Notificaciones
+
+def listadoNotificacion(request):
+    notificaciones = (
+        NotificacionCorreo.objects.select_related("encomienda")
+        .all()
+        .order_by("-fecha_envio")
+    )
+    return render(
+        request,
+        "notificaciones/listadoNotificacion.html",
+        {"notificaciones": notificaciones},
+    )

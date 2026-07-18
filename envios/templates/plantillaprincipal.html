@@ -63,66 +63,86 @@
     <header id="header" class="header d-flex align-items-center fixed-top dark-background">
         <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
-        <a href="index.html" class="logo d-flex align-items-center me-auto">
-            <!-- Uncomment the line below if you also wish to use an image logo -->
-            <!-- <img src="assets/img/logo.png" alt=""> -->
-            <h1 class="sitename">Logis</h1>
-        </a>
+            <a href="/" class="logo d-flex align-items-center me-auto">
+                <h1 class="sitename">Punto a Punto</h1>
+            </a>
 
-        <nav id="navmenu" class="navmenu">
-            <ul>
-                <li>
-                    <a href="/" class="active">Inicio</a>
-                </li>
-                <li>
-                    <a href="/clientes/listadoCliente/">Clientes</a>
-                </li>
-                <li>
-                    <a href="/oficinas/listadoOficina/">Oficinas</a>
-                </li>
-                <li>
-                    <a href="/transportes/listadoTransporte/">Transportes</a>
-                </li>
-                <li>
-                    <a href="/seguros/listadoSeguro/">Seguros</a>
-                </li>
-                <li class="dropdown">
-                    <a href="#">
-                        <span>Encomiendas</span>
-                        <i class="bi bi-chevron-down toggle-dropdown"></i>
-                    </a>
-                    <ul>
-                        <li>
-                            <a href="/encomiendas/listadoEncomienda/">Listado</a>
-                        </li>
-                        <li>
-                            <a href="/encomiendas/nuevaEncomienda/">Registrar encomienda</a>
-                        </li>
-                        <li>
-                            <a href="/seguimiento/seguimientoEncomienda/">Seguimiento</a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a href="#">
-                        <span>Reportes</span>
-                        <i class="bi bi-chevron-down toggle-dropdown"></i>
-                    </a>
-                    <ul>
-                        <li>
-                            <a href="/reportes/listadoReporte/">Novedades</a>
-                        </li>
-                        <li>
-                            <a href="/reportes/reportesGenerales/">Reportes generales</a>
-                        </li>
-                        <li>
-                            <a href="/reportes/listadoNotificacion/">Correos enviados</a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-            <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-        </nav>
+            <nav id="navmenu" class="navmenu">
+                <ul>
+
+                    <li>
+                        <a href="/" class="active">Inicio</a>
+                    </li>
+
+                    <li>
+                        <a href="/clientes/listadoCliente/">Clientes</a>
+                    </li>
+
+                    <li>
+                        <a href="/oficinas/listadoOficina/">Oficinas</a>
+                    </li>
+
+                    <li>
+                        <a href="/transportes/listadoTransporte/">Transportes</a>
+                    </li>
+
+                    <li>
+                        <a href="/seguros/listadoSeguro/">Seguros</a>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="#">
+                            <span>Encomiendas</span>
+                            <i class="bi bi-chevron-down toggle-dropdown"></i>
+                        </a>
+
+                        <ul>
+                            <li>
+                                <a href="/encomiendas/listadoEncomienda/">
+                                    Listado de encomiendas
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="/encomiendas/nuevaEncomienda/">
+                                    Registrar encomienda
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="/seguimiento/seguimientoEncomienda/">
+                                    Seguimiento
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="dropdown">
+                        <a href="#">
+                            <span>Reportes</span>
+                            <i class="bi bi-chevron-down toggle-dropdown"></i>
+                        </a>
+
+                        <ul>
+                            <li>
+                                <a href="/reportes/listadoReporte/">
+                                    Novedades
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="/notificaciones/listadoNotificacion/">
+                                    Correos enviados
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+
+                <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+            </nav>
+
         </div>
     </header>
 {% block contenido %}

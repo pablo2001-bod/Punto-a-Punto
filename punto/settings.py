@@ -118,3 +118,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'punto/static'),)
+
+# Configuración SMTP para envío de correos
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'jair.medina5631@utc.edu.ec'  
+EMAIL_HOST_PASSWORD = 'fbkl xzjw yxyx ljkd'    
+DEFAULT_FROM_EMAIL = 'jair.medina5631@utc.edu.ec'

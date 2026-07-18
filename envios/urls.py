@@ -33,4 +33,6 @@ urlpatterns = [
     path("reportes/listadoReporte/", views.listadoReporte),
     path("reportes/nuevoReporte/<id>/", views.nuevoReporte),
     path("reportes/guardarReporte/", views.guardarReporte),
+    #Notificaciones
+    path("notificaciones/listadoNotificacion/", views.listadoNotificacion),
 ]
