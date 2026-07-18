@@ -29,4 +29,8 @@ urlpatterns = [
     path("encomiendas/actualizarEstadoEncomienda/<id>/", views.actualizarEstadoEncomienda),
     #Seguimiento
     path("seguimiento/seguimientoEncomienda/", views.seguimientoEncomienda),
+    #REPORTES
+    path("reportes/listadoReporte/", views.listadoReporte),
+    path("reportes/nuevoReporte/<id>/", views.nuevoReporte),
+    path("reportes/guardarReporte/", views.guardarReporte),
 ]

@@ -279,3 +279,47 @@ def seguimientoEncomienda(request):
             "busqueda_realizada": busqueda_realizada,
         },
     )
+
+#REPORTES
+
+def listadoReporte(request):
+    reportes = Reporte.objects.select_related("encomienda").all().order_by(
+        "-fecha_reporte"
+    )
+    return render(request, "reportes/listadoReporte.html", {"reportes": reportes})
+
+def nuevoReporte(request, id):
+    encomienda = Encomienda.objects.get(id_encomienda=id)
+    return render(
+        request,
+        "reportes/nuevoReporte.html",
+        {
+            "encomienda": encomienda,
+            "tipos_reporte": Reporte.TIPOS_REPORTE,
+        },
+    )
+
+def guardarReporte(request):
+    if request.method == "POST":
+        encomienda = Encomienda.objects.get(
+            id_encomienda=request.POST["encomienda"]
+        )
+
+        reporte = Reporte.objects.create(
+            encomienda=encomienda,
+            tipo=request.POST["tipo"],
+            detalle=request.POST["detalle"],
+            resuelto="resuelto" in request.POST,
+        )
+
+        asunto = f"Novedad de encomienda {encomienda.codigo_seguimiento}"
+        mensaje_correo = (
+            f"Se registró una novedad en su encomienda.\n\n"
+            f"Tipo: {reporte.get_tipo_display()}\n"
+            f"Detalle: {reporte.detalle}\n"
+        )
+        enviar_notificacion(encomienda, asunto, mensaje_correo)
+
+        messages.success(request, "Reporte registrado correctamente.")
+        return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
+    return redirect("reportes/listadoReporte")
