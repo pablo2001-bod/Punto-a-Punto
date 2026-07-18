@@ -1,0 +1,62 @@
+{% extends 'plantillaprincipal.html' %}
+{% load static %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Registrar cliente</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/clientes/guardarCliente/" method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Cédula</label>
+                            <input type="text" name="cedula" maxlength="10"
+                                   class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" name="nombres" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" name="apellidos" class="form-control" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Correo</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="direccion" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <a href="/clientes/listadoCliente/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

@@ -28,6 +28,26 @@
 
     <!-- Main CSS File -->
     <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
+    
+    <!-- Diseño del encabezado -->
+    <style>
+    #header {
+        background-color: #0e1d34 !important;
+    }
+
+    #header .sitename {
+        color: white !important;
+    }
+
+    #header .navmenu > ul > li > a {
+        color: white !important;
+    }
+
+    #header .navmenu > ul > li > a:hover,
+    #header .navmenu > ul > li > a.active {
+        color: #0d6efd !important;
+    }
+</style>
 
     <!-- =======================================================
     * Template Name: Logis
@@ -40,7 +60,7 @@
 
     <body class="index-page">
 
-    <header id="header" class="header d-flex align-items-center fixed-top">
+    <header id="header" class="header d-flex align-items-center fixed-top dark-background">
         <div class="container-fluid container-xl position-relative d-flex align-items-center">
 
         <a href="index.html" class="logo d-flex align-items-center me-auto">
@@ -51,34 +71,58 @@
 
         <nav id="navmenu" class="navmenu">
             <ul>
-            <li><a href="index.html" class="active">Home<br></a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="pricing.html">Pricing</a></li>
-            <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                <ul>
-                <li><a href="#">Dropdown 1</a></li>
-                <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+                <li>
+                    <a href="/" class="active">Inicio</a>
+                </li>
+                <li>
+                    <a href="/clientes/listadoCliente/">Clientes</a>
+                </li>
+                <li>
+                    <a href="/oficinas/listadoOficina/">Oficinas</a>
+                </li>
+                <li>
+                    <a href="/transportes/listadoTransporte/">Transportes</a>
+                </li>
+                <li>
+                    <a href="/seguros/listadoSeguro/">Seguros</a>
+                </li>
+                <li class="dropdown">
+                    <a href="#">
+                        <span>Encomiendas</span>
+                        <i class="bi bi-chevron-down toggle-dropdown"></i>
+                    </a>
                     <ul>
-                    <li><a href="#">Deep Dropdown 1</a></li>
-                    <li><a href="#">Deep Dropdown 2</a></li>
-                    <li><a href="#">Deep Dropdown 3</a></li>
-                    <li><a href="#">Deep Dropdown 4</a></li>
-                    <li><a href="#">Deep Dropdown 5</a></li>
+                        <li>
+                            <a href="/encomiendas/listadoEncomienda/">Listado</a>
+                        </li>
+                        <li>
+                            <a href="/encomiendas/nuevaEncomienda/">Registrar encomienda</a>
+                        </li>
+                        <li>
+                            <a href="/encomiendas/seguimientoEncomienda/">Seguimiento</a>
+                        </li>
                     </ul>
                 </li>
-                <li><a href="#">Dropdown 2</a></li>
-                <li><a href="#">Dropdown 3</a></li>
-                <li><a href="#">Dropdown 4</a></li>
-                </ul>
-            </li>
-            <li><a href="contact.html">Contact</a></li>
+                <li class="dropdown">
+                    <a href="#">
+                        <span>Reportes</span>
+                        <i class="bi bi-chevron-down toggle-dropdown"></i>
+                    </a>
+                    <ul>
+                        <li>
+                            <a href="/reportes/listadoReporte/">Novedades</a>
+                        </li>
+                        <li>
+                            <a href="/reportes/reportesGenerales/">Reportes generales</a>
+                        </li>
+                        <li>
+                            <a href="/reportes/listadoNotificacion/">Correos enviados</a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
             <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>
-
-        <a class="btn-getstarted" href="get-a-quote.html">Get a Quote</a>
-
         </div>
     </header>
 {% block contenido %}

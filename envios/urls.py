@@ -5,4 +5,8 @@ from django.conf.urls.static import static
 from . import views
 urlpatterns = [
     path('', views.inicio),
+    #Clientes
+    path("clientes/listadoCliente/", views.listadoCliente),
+    path("clientes/nuevoCliente/", views.nuevoCliente),
+    path("clientes/guardarCliente/", views.guardarCliente),
 ]
