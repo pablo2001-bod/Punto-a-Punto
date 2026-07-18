@@ -1,0 +1,71 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Nuevo transporte | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-truck"></i> Registrar transporte</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/transportes/guardarTransporte/" method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Placa</label>
+                            <input type="text" name="placa" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-select" required>
+                                <option value="">Seleccione</option>
+                                {% for valor, texto in tipos_transporte %}
+                                <option value="{{ valor }}">{{ texto }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Marca</label>
+                            <input type="text" name="marca" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Modelo</label>
+                            <input type="text" name="modelo" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Capacidad en kilogramos</label>
+                            <input type="number" name="capacidad_kg" step="0.01"
+                                   min="0.01" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Estado</label>
+                            <select name="estado" class="form-select" required>
+                                {% for valor, texto in estados_transporte %}
+                                <option value="{{ valor }}">{{ texto }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <a href="/transportes/listadoTransporte/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Transportes | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Transportes</h2>
+        <p class="text-muted mb-0">Vehículos utilizados para los envíos.</p>
+    </div>
+    <a href="/transportes/nuevoTransporte/" class="btn btn-primary">
+        <i class="bi bi-truck"></i> Nuevo transporte
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Tipo</th>
+                        <th>Marca / Modelo</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transporte in transportes %}
+                    <tr>
+                        <td><strong>{{ transporte.placa }}</strong></td>
+                        <td>{{ transporte.get_tipo_display }}</td>
+                        <td>{{ transporte.marca }} {{ transporte.modelo }}</td>
+                        <td>{{ transporte.capacidad_kg }} kg</td>
+                        <td><span class="badge text-bg-primary">{{ transporte.get_estado_display }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No existen transportes registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

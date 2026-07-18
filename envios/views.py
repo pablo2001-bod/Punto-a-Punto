@@ -1,6 +1,10 @@
 from django.shortcuts import render, redirect
 from envios.models import Cliente, Oficina, Transporte, Seguro, Encomienda, Reporte, NotificacionCorreo
 from django.contrib import messages
+import uuid
+from django.conf import settings
+from django.core.mail import send_mail
+from django.utils import timezone
 
 # Create your views here.
 def inicio(request):
@@ -47,3 +51,34 @@ def guardarOficina(request):
         messages.success(request, "Oficina registrada correctamente.")
     return redirect("/oficinas/listadoOficina")
 
+#Trasportes
+def listadoTransporte(request):
+    transportes = Transporte.objects.all().order_by("-id_transporte")
+    return render(
+        request,
+        "transportes/listadoTransporte.html",
+        {"transportes": transportes},
+    )
+
+def nuevoTransporte(request):
+    return render(
+        request,
+        "transportes/nuevoTransporte.html",
+        {
+            "tipos_transporte": Transporte.TIPOS_TRANSPORTE,
+            "estados_transporte": Transporte.ESTADOS_TRANSPORTE,
+        },
+    )
+
+def guardarTransporte(request):
+    if request.method == "POST":
+        Transporte.objects.create(
+            placa=request.POST["placa"],
+            tipo=request.POST["tipo"],
+            marca=request.POST["marca"],
+            modelo=request.POST["modelo"],
+            capacidad_kg=request.POST["capacidad_kg"],
+            estado=request.POST["estado"],
+        )
+        messages.success(request, "Transporte registrado correctamente.")
+    return redirect("/transportes/listadoTransporte/")
