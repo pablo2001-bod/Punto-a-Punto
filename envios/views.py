@@ -82,3 +82,23 @@ def guardarTransporte(request):
         )
         messages.success(request, "Transporte registrado correctamente.")
     return redirect("/transportes/listadoTransporte/")
+
+#Seguros
+def listadoSeguro(request):
+    seguros = Seguro.objects.all().order_by("-id_seguro")
+    return render(request, "seguros/listadoSeguro.html", {"seguros": seguros})
+
+def nuevoSeguro(request):
+    return render(request, "seguros/nuevoSeguro.html")
+
+def guardarSeguro(request):
+    if request.method == "POST":
+        Seguro.objects.create(
+            nombre=request.POST["nombre"],
+            descripcion=request.POST["descripcion"],
+            porcentaje_cobertura=request.POST["porcentaje_cobertura"],
+            costo=request.POST["costo"],
+            activo="activo" in request.POST,
+        )
+        messages.success(request, "Seguro registrado correctamente.")
+    return redirect("/seguros/listadoSeguro/")

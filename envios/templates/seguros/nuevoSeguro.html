@@ -1,0 +1,66 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Nuevo seguro | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-shield-check"></i> Registrar seguro</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/seguros/guardarSeguro/" method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cobertura (%)</label>
+                            <input type="number" name="porcentaje_cobertura"
+                                   step="0.01" min="0" max="100"
+                                   class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Costo</label>
+                            <input type="number" name="costo" step="0.01"
+                                   min="0" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="descripcion" rows="4"
+                                      class="form-control" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input type="checkbox" name="activo"
+                                       class="form-check-input" id="activo" checked>
+                                <label class="form-check-label" for="activo">
+                                    Seguro activo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <a href="/seguros/listadoSeguro/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}
