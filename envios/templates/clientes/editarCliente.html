@@ -1,0 +1,75 @@
+{% extends 'plantillaprincipal.html' %}
+{% load static %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Editar Cliente</h2>
+        <p class="text-muted mb-0">Modifica la información del cliente {{ cliente.nombres }} {{ cliente.apellidos }}.</p>
+    </div>
+    <a href="/clientes/listadoCliente/" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Volver al listado
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form action="/clientes/actualizarCliente/{{ cliente.id_cliente }}/" method="POST">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Por favor corrige los siguientes errores:</strong>
+                <ul class="mb-0 mt-2">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="id_cedula" class="form-label">Cédula</label>
+                    {{ form.cedula }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_nombres" class="form-label">Nombres</label>
+                    {{ form.nombres }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_apellidos" class="form-label">Apellidos</label>
+                    {{ form.apellidos }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_email" class="form-label">Correo Electrónico</label>
+                    {{ form.email }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_telefono" class="form-label">Teléfono</label>
+                    {{ form.telefono }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_direccion" class="form-label">Dirección</label>
+                    {{ form.direccion }}
+                </div>
+            </div>
+
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}
