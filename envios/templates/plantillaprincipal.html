@@ -71,27 +71,27 @@
                 <ul>
 
                     <li>
-                        <a href="/" class="active">Inicio</a>
+                        <a href="/" class="{% if request.path == '/' %}active{% endif %}">Inicio</a>
                     </li>
 
                     <li>
-                        <a href="/clientes/listadoCliente/">Clientes</a>
+                        <a href="/clientes/listadoCliente/" class="{% if '/clientes/' in request.path %}active{% endif %}">Clientes</a>
                     </li>
 
                     <li>
-                        <a href="/oficinas/listadoOficina/">Oficinas</a>
+                        <a href="/oficinas/listadoOficina/" class="{% if '/oficinas/' in request.path %}active{% endif %}">Oficinas</a>
                     </li>
 
                     <li>
-                        <a href="/transportes/listadoTransporte/">Transportes</a>
+                        <a href="/transportes/listadoTransporte/" class="{% if '/transportes/' in request.path %}active{% endif %}">Transportes</a>
                     </li>
 
                     <li>
-                        <a href="/seguros/listadoSeguro/">Seguros</a>
+                        <a href="/seguros/listadoSeguro/" class="{% if '/seguros/' in request.path %}active{% endif %}">Seguros</a>
                     </li>
 
                     <li class="dropdown">
-                        <a href="#">
+                        <a href="#" class="{% if '/encomiendas/' in request.path or '/seguimiento/' in request.path %}active{% endif %}">
                             <span>Encomiendas</span>
                             <i class="bi bi-chevron-down toggle-dropdown"></i>
                         </a>
@@ -118,7 +118,7 @@
                     </li>
 
                     <li class="dropdown">
-                        <a href="#">
+                        <a href="#" class="{% if '/reportes/' in request.path or '/notificaciones/' in request.path %}active{% endif %}">
                             <span>Reportes</span>
                             <i class="bi bi-chevron-down toggle-dropdown"></i>
                         </a>

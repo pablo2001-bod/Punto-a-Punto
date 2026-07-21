@@ -105,26 +105,26 @@ def guardarOficina(request):
 
 def editarOficina(request, id):
     oficina = get_object_or_404(Oficina, id_oficina=id)
-    form = OficinaForm(instance=oficina)
-    return render(request, "oficinas/editarOficina.html", {"form": form, "oficina": oficina})
+    return render(request, "oficinas/editarOficina.html", {"oficina": oficina})
 
 def actualizarOficina(request, id):
     oficina = get_object_or_404(Oficina, id_oficina=id)
     if request.method == "POST":
-        form = OficinaForm(request.POST, instance=oficina)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Oficina actualizada correctamente.")
-            return redirect("/oficinas/listadoOficina")
-        else:
-            return render(request, "oficinas/editarOficina.html", {"form": form, "oficina": oficina})
-    return redirect("/oficinas/listadoOficina")
+        oficina.nombre = request.POST["nombre"]
+        oficina.ciudad = request.POST["ciudad"]
+        oficina.direccion = request.POST["direccion"]
+        oficina.telefono = request.POST["telefono"]
+        oficina.email = request.POST.get("email", "")
+        oficina.save()
+        messages.success(request, "Oficina actualizada correctamente.")
+        return redirect("/oficinas/listadoOficina/")
+    return redirect("/oficinas/listadoOficina/")
 
 def eliminarOficina(request, id):
     oficina = get_object_or_404(Oficina, id_oficina=id)
     oficina.delete()
     messages.success(request, "Oficina eliminada correctamente.")
-    return redirect("/oficinas/listadoOficina")
+    return redirect("/oficinas/listadoOficina/")
 
 #Trasportes
 def listadoTransporte(request):

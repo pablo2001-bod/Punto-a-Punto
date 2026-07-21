@@ -1,4 +1,5 @@
-{% extends "plantillaprincipal.html" %}
+{% extends 'plantillaprincipal.html' %}
+{% load static %}
 {% block contenido %}
 <main class="main" style="padding-top: 105px;">
 <section class="section">
@@ -25,6 +26,7 @@
                         <th>Dirección</th>
                         <th>Teléfono</th>
                         <th>Correo</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,10 +37,18 @@
                         <td>{{ oficina.direccion }}</td>
                         <td>{{ oficina.telefono }}</td>
                         <td>{{ oficina.email|default:"—" }}</td>
+                        <td class="text-center">
+                            <a href="/oficinas/editarOficina/{{ oficina.id_oficina }}" class="btn btn-warning btn-sm me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ oficina.id_oficina }}', '{{ oficina.nombre }}')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             No existen oficinas registradas.
                         </td>
                     </tr>
@@ -52,4 +62,25 @@
 </div>
 </section>
 </main>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarEliminacion(id, nombre) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Vas a eliminar la oficina: ${nombre}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/oficinas/eliminarOficina/${id}`;
+            }
+        });
+    }
+</script>
 {% endblock %}

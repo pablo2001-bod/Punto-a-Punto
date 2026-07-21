@@ -1,0 +1,57 @@
+{% extends "plantillaprincipal.html" %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Editar oficina</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/oficinas/actualizarOficina/{{ oficina.id_oficina }}/" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="nombre" value="{{ oficina.nombre }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ciudad</label>
+                            <input type="text" name="ciudad" value="{{ oficina.ciudad }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="direccion" value="{{ oficina.direccion }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" value="{{ oficina.telefono }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Correo</label>
+                            <input type="email" name="email" value="{{ oficina.email }}" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar cambios
+                        </button>
+                        <a href="/oficinas/listadoOficina/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}
