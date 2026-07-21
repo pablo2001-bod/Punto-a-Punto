@@ -26,6 +26,7 @@
                         <th>Correo</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,10 +37,18 @@
                         <td>{{ cliente.email }}</td>
                         <td>{{ cliente.telefono }}</td>
                         <td>{{ cliente.direccion }}</td>
+                        <td class="text-center">
+                            <a href="/clientes/editarCliente/{{ cliente.id_cliente }}/" class="btn btn-warning btn-sm me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ cliente.id_cliente }}', '{{ cliente.nombres }} {{ cliente.apellidos }}')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             No existen clientes registrados.
                         </td>
                     </tr>
@@ -53,4 +62,25 @@
 </div>
 </section>
 </main>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarEliminacion(id, nombre) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Vas a eliminar al cliente: ${nombre}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/clientes/eliminarCliente/${id}/`;
+            }
+        });
+    }
+</script>
 {% endblock %}

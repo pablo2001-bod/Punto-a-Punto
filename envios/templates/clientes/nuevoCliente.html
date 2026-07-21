@@ -5,56 +5,53 @@
 <section class="section">
 <div class="container">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2>Clientes</h2>
-        <p class="text-muted mb-0">Personas que realizan envíos.</p>
-    </div>
-    <a href="/clientes/nuevoCliente/" class="btn btn-primary">
-        <i class="bi bi-person-plus"></i> Nuevo cliente
-    </a>
-</div>
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Registrar cliente</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="/clientes/guardarCliente/" method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Cédula</label>
+                            <input type="text" name="cedula" maxlength="10"
+                                   class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" name="nombres" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" name="apellidos" class="form-control" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">Correo</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="direccion" class="form-control" required>
+                        </div>
+                    </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Cédula</th>
-                        <th>Cliente</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Dirección</th>
-                        <th class="text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for cliente in clientes %}
-                    <tr>
-                        <td>{{ cliente.cedula }}</td>
-                        <td>{{ cliente.nombres }} {{ cliente.apellidos }}</td>
-                        <td>{{ cliente.email }}</td>
-                        <td>{{ cliente.telefono }}</td>
-                        <td>{{ cliente.direccion }}</td>
-                        <td class="text-center">
-                            <a href="/clientes/editarCliente/{{ cliente.id_cliente }}/" class="btn btn-warning btn-sm me-1" title="Editar">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ cliente.id_cliente }}', '{{ cliente.nombres }} {{ cliente.apellidos }}')" title="Eliminar">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
-                            No existen clientes registrados.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <a href="/clientes/listadoCliente/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -62,25 +59,4 @@
 </div>
 </section>
 </main>
-
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    function confirmarEliminacion(id, nombre) {
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: `Vas a eliminar al cliente: ${nombre}`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = `/clientes/eliminarCliente/${id}/`;
-            }
-        });
-    }
-</script>
 {% endblock %}
