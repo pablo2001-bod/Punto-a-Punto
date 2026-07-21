@@ -26,6 +26,7 @@
                         <th>Marca / Modelo</th>
                         <th>Capacidad</th>
                         <th>Estado</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,10 +37,18 @@
                         <td>{{ transporte.marca }} {{ transporte.modelo }}</td>
                         <td>{{ transporte.capacidad_kg }} kg</td>
                         <td><span class="badge text-bg-primary">{{ transporte.get_estado_display }}</span></td>
+                        <td class="text-center">
+                            <a href="/transportes/editarTransporte/{{ transporte.id_transporte }}/" class="btn btn-warning btn-sm me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminacion('{{ transporte.id_transporte }}', '{{ transporte.placa }}')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             No existen transportes registrados.
                         </td>
                     </tr>
@@ -53,4 +62,25 @@
 </div>
 </section>
 </main>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarEliminacion(id, placa) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `Vas a eliminar el transporte con placa: ${placa}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/transportes/eliminarTransporte/${id}/`;
+            }
+        });
+    }
+</script>
 {% endblock %}

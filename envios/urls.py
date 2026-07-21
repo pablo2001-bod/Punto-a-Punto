@@ -27,6 +27,8 @@ urlpatterns = [
     path("transportes/listadoTransporte/", views.listadoTransporte),
     path("transportes/nuevoTransporte/", views.nuevoTransporte),
     path("transportes/guardarTransporte/", views.guardarTransporte),
+    path("transportes/editarTransporte/<id>/", views.editarTransporte),
+    path("transportes/actualizarTransporte/<id>/", views.actualizarTransporte),
     
     # Seguros
     path("seguros/listadoSeguro/", views.listadoSeguro),

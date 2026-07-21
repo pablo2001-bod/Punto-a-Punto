@@ -1,0 +1,82 @@
+{% extends "plantillaprincipal.html" %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0 text-dark">
+                    <i class="bi bi-pencil-square"></i>
+                    Editar Transporte
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <p>
+                    <strong>Placa actual:</strong>
+                    {{ transporte.placa }}
+                </p>
+
+                <form method="post" action="/transportes/actualizarTransporte/{{ transporte.id_transporte }}/">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Placa</label>
+                        <input type="text" name="placa" class="form-control" value="{{ transporte.placa }}" required maxlength="10">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Transporte</label>
+                        <select name="tipo" class="form-select" required>
+                            {% for valor, texto in tipos_transporte %}
+                            <option value="{{ valor }}" {% if transporte.tipo == valor %}selected{% endif %}>
+                                {{ texto }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Marca</label>
+                        <input type="text" name="marca" class="form-control" value="{{ transporte.marca }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" name="modelo" class="form-control" value="{{ transporte.modelo }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Capacidad (Kg)</label>
+                        <input type="number" step="0.01" name="capacidad_kg" class="form-control" value="{{ transporte.capacidad_kg }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select" required>
+                            {% for valor, texto in estados_transporte %}
+                            <option value="{{ valor }}" {% if transporte.estado == valor %}selected{% endif %}>
+                                {{ texto }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Actualizar
+                    </button>
+                    <a href="/transportes/listadoTransporte/" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

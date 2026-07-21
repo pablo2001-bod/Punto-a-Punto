@@ -126,7 +126,7 @@ def eliminarOficina(request, id):
     messages.success(request, "Oficina eliminada correctamente.")
     return redirect("/oficinas/listadoOficina/")
 
-#Trasportes
+#TRANSPORTES
 def listadoTransporte(request):
     transportes = Transporte.objects.all().order_by("-id_transporte")
     return render(
@@ -144,6 +144,7 @@ def nuevoTransporte(request):
             "estados_transporte": Transporte.ESTADOS_TRANSPORTE,
         },
     )
+#GUARDAR
 
 def guardarTransporte(request):
     if request.method == "POST":
@@ -156,6 +157,34 @@ def guardarTransporte(request):
             estado=request.POST["estado"],
         )
         messages.success(request, "Transporte registrado correctamente.")
+    return redirect("/transportes/listadoTransporte/")
+
+#EDITAR
+
+def editarTransporte(request, id):
+    transporte = get_object_or_404(Transporte, id_transporte=id)
+    return render(
+        request,
+        "transportes/editarTransporte.html",
+        {
+            "transporte": transporte,
+            "tipos_transporte": Transporte.TIPOS_TRANSPORTE,
+            "estados_transporte": Transporte.ESTADOS_TRANSPORTE,
+        },
+    )
+
+def actualizarTransporte(request, id):
+    transporte = get_object_or_404(Transporte, id_transporte=id)
+    if request.method == "POST":
+        transporte.placa = request.POST["placa"]
+        transporte.tipo = request.POST["tipo"]
+        transporte.marca = request.POST["marca"]
+        transporte.modelo = request.POST["modelo"]
+        transporte.capacidad_kg = request.POST["capacidad_kg"]
+        transporte.estado = request.POST["estado"]
+        transporte.save()
+        messages.success(request, "Transporte actualizado correctamente.")
+        return redirect("/transportes/listadoTransporte/")
     return redirect("/transportes/listadoTransporte/")
 
 #Seguros
