@@ -5,6 +5,8 @@ import uuid
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
+from envios.forms import ClienteForm, OficinaForm
+from django.shortcuts import render, redirect, get_object_or_404
 
 #Enviar Notificacion
 def enviar_notificacion(encomienda, asunto, mensaje):
@@ -44,19 +46,41 @@ def listadoCliente(request):
     return render(request, "clientes/listadoCliente.html", {"clientes": clientes})
 
 def nuevoCliente(request):
-    return render(request, "clientes/nuevoCliente.html")
+    form = ClienteForm()
+    return render(request, "clientes/nuevoCliente.html", {"form": form})
 
 def guardarCliente(request):
     if request.method == "POST":
-        Cliente.objects.create(
-            cedula=request.POST["cedula"],
-            nombres=request.POST["nombres"],
-            apellidos=request.POST["apellidos"],
-            email=request.POST["email"],
-            telefono=request.POST["telefono"],
-            direccion=request.POST["direccion"],
-        )
-        messages.success(request, "Cliente registrado correctamente.")
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cliente registrado correctamente.")
+            return redirect("/clientes/listadoCliente")
+        else:
+            return render(request, "clientes/nuevoCliente.html", {"form": form})
+    return redirect("/clientes/listadoCliente")
+
+def editarCliente(request, id):
+    cliente = get_object_or_404(Cliente, id_cliente=id)
+    form = ClienteForm(instance=cliente)
+    return render(request, "clientes/editarCliente.html", {"form": form, "cliente": cliente})
+
+def actualizarCliente(request, id):
+    cliente = get_object_or_404(Cliente, id_cliente=id)
+    if request.method == "POST":
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cliente actualizado correctamente.")
+            return redirect("/clientes/listadoCliente")
+        else:
+            return render(request, "clientes/editarCliente.html", {"form": form, "cliente": cliente})
+    return redirect("/clientes/listadoCliente")
+
+def eliminarCliente(request, id):
+    cliente = get_object_or_404(Cliente, id_cliente=id)
+    cliente.delete()
+    messages.success(request, "Cliente eliminado correctamente.")
     return redirect("/clientes/listadoCliente")
 
 #Oficinas
