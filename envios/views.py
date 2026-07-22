@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 from envios.forms import ClienteForm, OficinaForm
+from django.db.models import Sum
 
 # ==========================================
 # FUNCIÓN AUXILIAR: Enviar Notificacion
@@ -583,4 +584,46 @@ def listadoNotificacion(request):
         request,
         "notificaciones/listadoNotificacion.html",
         {"notificaciones": notificaciones},
+    )
+
+# REPORTES GENERALES (Filtros y Dashboard)
+def reportesGenerales(request):
+    # Obtenemos todas las encomiendas base
+    encomiendas = Encomienda.objects.select_related(
+        'cliente', 'oficina_origen', 'oficina_destino'
+    ).all().order_by('-fecha_registro')
+
+    # Capturar parámetros de filtro desde el formulario GET
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    estado = request.GET.get('estado')
+    oficina = request.GET.get('oficina')
+
+    # Aplicar filtros si existen
+    if fecha_inicio:
+        encomiendas = encomiendas.filter(fecha_registro__date__gte=fecha_inicio)
+    if fecha_fin:
+        encomiendas = encomiendas.filter(fecha_registro__date__lte=fecha_fin)
+    if estado:
+        encomiendas = encomiendas.filter(estado=estado)
+    if oficina:
+        # Filtra si la oficina seleccionada es origen o destino
+        encomiendas = encomiendas.filter(oficina_origen__id_oficina=oficina) | encomiendas.filter(oficina_destino__id_oficina=oficina)
+
+    # Cálculos para el Dashboard (KPIs)
+    total_encomiendas = encomiendas.count()
+    # Sumar el costo de envío de las encomiendas filtradas (si es None, devuelve 0)
+    total_ingresos = encomiendas.aggregate(total=Sum('costo_envio'))['total'] or 0
+
+    return render(
+        request, 
+        "reportes/reportesGenerales.html", 
+        {
+            "encomiendas": encomiendas,
+            "estados_encomienda": Encomienda.ESTADOS_ENCOMIENDA,
+            "oficinas": Oficina.objects.all(),
+            "total_encomiendas": total_encomiendas,
+            "total_ingresos": total_ingresos,
+            "filtros": request.GET, # Para mantener los valores seleccionados en el select/input
+        }
     )

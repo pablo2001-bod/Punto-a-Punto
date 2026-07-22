@@ -1,0 +1,140 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Reportes Generales | Punto a Punto{% endblock %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Dashboard de Reportes</h2>
+        <p class="text-muted mb-0">Generación de informes filtrados de encomiendas y estadísticas.</p>
+    </div>
+    <div>
+        <!-- Botón para imprimir o generar PDF (Usando la función nativa del navegador por ahora) -->
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer"></i> Imprimir Reporte
+        </button>
+    </div>
+</div>
+
+<!-- Tarjetas de Resumen (KPIs) -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card text-white bg-primary shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-box-seam"></i> Total Encomiendas</h5>
+                <h2 class="display-5 fw-bold mb-0">{{ total_encomiendas }}</h2>
+                <p class="card-text"><small>Según los filtros aplicados</small></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-white bg-success shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-cash-coin"></i> Total Ingresos (Costo de Envío)</h5>
+                <h2 class="display-5 fw-bold mb-0">${{ total_ingresos|floatformat:2 }}</h2>
+                <p class="card-text"><small>Suma de las encomiendas listadas</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario de Filtros -->
+<div class="card shadow-sm mb-4 bg-light">
+    <div class="card-body">
+        <form method="get" action="/reportes/reportesGenerales/">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">Desde Fecha</label>
+                    <input type="date" name="fecha_inicio" class="form-control" value="{{ filtros.fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">Hasta Fecha</label>
+                    <input type="date" name="fecha_fin" class="form-control" value="{{ filtros.fecha_fin }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label font-weight-bold">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        {% for valor, texto in estados_encomienda %}
+                        <option value="{{ valor }}" {% if filtros.estado == valor %}selected{% endif %}>{{ texto }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">Oficina (Origen o Destino)</label>
+                    <select name="oficina" class="form-select">
+                        <option value="">Todas</option>
+                        {% for o in oficinas %}
+                        <option value="{{ o.id_oficina }}" {% if filtros.oficina == o.id_oficina|stringformat:"s" %}selected{% endif %}>{{ o.ciudad }} - {{ o.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100" title="Filtrar">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <a href="/reportes/reportesGenerales/" class="btn btn-secondary w-100" title="Limpiar filtros">
+                        <i class="bi bi-eraser"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de Resultados -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Fecha</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Estado</th>
+                        <th>Ingreso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for encomienda in encomiendas %}
+                    <tr>
+                        <td><strong>{{ encomienda.codigo_seguimiento }}</strong></td>
+                        <td>{{ encomienda.fecha_registro|date:"d/m/Y H:i" }}</td>
+                        <td>{{ encomienda.oficina_origen.ciudad }}</td>
+                        <td>{{ encomienda.oficina_destino.ciudad }}</td>
+                        <td>
+                            <span class="badge text-bg-info">{{ encomienda.get_estado_display }}</span>
+                        </td>
+                        <td>${{ encomienda.costo_envio|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No se encontraron encomiendas con los filtros aplicados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+
+<style>
+/* Ocultar elementos innecesarios al imprimir */
+@media print {
+    body * { visibility: hidden; }
+    .main, .main * { visibility: visible; }
+    .main { position: absolute; left: 0; top: 0; margin-top: 0 !important; padding-top: 0 !important;}
+    form, .btn { display: none !important; }
+}
+</style>
+{% endblock %}

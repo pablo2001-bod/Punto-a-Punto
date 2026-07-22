@@ -1,4 +1,3 @@
-# urls.py
 from django.urls import path
 from envios import views
 
@@ -8,7 +7,7 @@ urlpatterns = [
     # Clientes
     path('clientes/listadoCliente/', views.listadoCliente, name='listadoCliente'),
     path('clientes/nuevoCliente/', views.nuevoCliente, name='nuevoCliente'),
-    path('clientes/guardarCliente/', views.guardarCliente, name='guardarCliente'),  
+    path('clientes/guardarCliente/', views.guardarCliente, name='guardarCliente'),
     path('clientes/editarCliente/<int:id>/', views.editarCliente, name='editarCliente'),
     path('clientes/actualizarCliente/<int:id>/', views.actualizarCliente, name='actualizarCliente'),
     path('clientes/eliminarCliente/<int:id>/', views.eliminarCliente, name='eliminarCliente'),
@@ -27,7 +26,7 @@ urlpatterns = [
     path('transportes/guardarTransporte/', views.guardarTransporte, name='guardarTransporte'),
     path('transportes/editarTransporte/<int:id>/', views.editarTransporte, name='editarTransporte'),
     path('transportes/actualizarTransporte/<int:id>/', views.actualizarTransporte, name='actualizarTransporte'),
-    path('transportes/eliminarTransporte/<int:id>/', views.eliminarTransporte, name='eliminarTransporte'),
+    path('transportes/eliminarTransporte/<int:id>/', views.eliminarTransporte, name='eliminarTransporte'), # <-- Asegúrate de tener esta vista si usas el botón eliminar
 
     # Seguros
     path('seguros/listadoSeguro/', views.listadoSeguro, name='listadoSeguro'),
@@ -47,7 +46,7 @@ urlpatterns = [
     # Seguimiento
     path('seguimiento/seguimientoEncomienda/', views.seguimientoEncomienda, name='seguimientoEncomienda'),
 
-    # Reportes
+    # Reportes y Novedades
     path('reportes/listadoReporte/', views.listadoReporte, name='listadoReporte'),
     path('reportes/nuevoReporte/<int:id>/', views.nuevoReporte, name='nuevoReporte'),
     path('reportes/guardarReporte/', views.guardarReporte, name='guardarReporte'),
@@ -55,6 +54,9 @@ urlpatterns = [
     path('reportes/actualizarReporte/<int:id>/', views.actualizarReporte, name='actualizarReporte'),
     path('reportes/eliminarReporte/<int:id>/', views.eliminarReporte, name='eliminarReporte'),
     path('reportes/resolverReporte/<int:id>/', views.resolverReporte, name='resolverReporte'),
+    
+    # NUEVO: Reportes Generales
+    path('reportes/reportesGenerales/', views.reportesGenerales, name='reportesGenerales'),
 
     # Notificaciones
     path('notificaciones/listadoNotificacion/', views.listadoNotificacion, name='listadoNotificacion'),
