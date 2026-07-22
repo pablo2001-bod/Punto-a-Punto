@@ -535,6 +535,40 @@ def guardarReporte(request):
             messages.error(request, f"Error al guardar reporte: {e}")
             
     return redirect("reportes/listadoReporte")
+def editarReporte(request, id):
+    reporte = get_object_or_404(Reporte, id_reporte=id)
+    return render(
+        request,
+        "reportes/editarReporte.html",
+        {
+            "reporte": reporte,
+            "tipos_reporte": Reporte.TIPOS_REPORTE,
+        }
+    )
+
+def actualizarReporte(request, id):
+    reporte = get_object_or_404(Reporte, id_reporte=id)
+    if request.method == "POST":
+        reporte.tipo = request.POST["tipo"]
+        reporte.detalle = request.POST["detalle"]
+        reporte.resuelto = "resuelto" in request.POST
+        reporte.save()
+        messages.success(request, "Reporte actualizado correctamente.")
+        return redirect("/reportes/listadoReporte/")
+    return redirect("/reportes/listadoReporte/")
+
+def eliminarReporte(request, id):
+    reporte = get_object_or_404(Reporte, id_reporte=id)
+    reporte.delete()
+    messages.success(request, "Reporte eliminado correctamente.")
+    return redirect("/reportes/listadoReporte/")
+
+def resolverReporte(request, id):
+    reporte = get_object_or_404(Reporte, id_reporte=id)
+    reporte.resuelto = True
+    reporte.save()
+    messages.success(request, "El reporte ha sido marcado como resuelto.")
+    return redirect("/reportes/listadoReporte/")
 
 # ==========================================
 # MÓDULO: Notificaciones

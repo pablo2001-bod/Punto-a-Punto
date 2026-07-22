@@ -1,149 +1,208 @@
 {% extends "plantillaprincipal.html" %}
+{% block titulo %}Nueva Encomienda | Punto a Punto{% endblock %}
+
 {% block contenido %}
 <main class="main" style="padding-top: 105px;">
 <section class="section">
 <div class="container">
 
-<div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-        <h4 class="mb-0"><i class="bi bi-box-seam"></i> Registrar encomienda</h4>
-    </div>
-
-    <div class="card-body p-4">
-        <form action="/encomiendas/guardarEncomienda/" method="post">
-            {% csrf_token %}
-            <h5 class="mb-3">Datos generales</h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Cliente remitente</label>
-                    <select name="cliente" class="form-select" required>
-                        <option value="">Seleccione un cliente</option>
-                        {% for cliente in clientes %}
-                        <option value="{{ cliente.id_cliente }}">
-                            {{ cliente.cedula }} - {{ cliente }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                    <div class="form-text">
-                        El cliente debe estar registrado previamente.
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-box-seam"></i> Registrar nueva encomienda</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="formEncomienda" action="/encomiendas/guardarEncomienda/" method="post">
+                    {% csrf_token %}
+                    
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">Datos de Origen y Destino</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Cliente Remitente <span class="text-danger">*</span></label>
+                            <select name="cliente" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                {% for c in clientes %}
+                                <option value="{{ c.id_cliente }}">{{ c.apellidos }} {{ c.nombres }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Oficina Origen <span class="text-danger">*</span></label>
+                            <select id="oficina_origen" name="oficina_origen" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                {% for o in oficinas %}
+                                <option value="{{ o.id_oficina }}">{{ o.ciudad }} - {{ o.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Oficina Destino <span class="text-danger">*</span></label>
+                            <select id="oficina_destino" name="oficina_destino" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                {% for o in oficinas %}
+                                <option value="{{ o.id_oficina }}">{{ o.ciudad }} - {{ o.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Oficina de origen</label>
-                    <select name="oficina_origen" class="form-select" required>
-                        <option value="">Seleccione</option>
-                        {% for oficina in oficinas %}
-                        <option value="{{ oficina.id_oficina }}">
-                            {{ oficina.ciudad }} - {{ oficina.nombre }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Oficina de destino</label>
-                    <select name="oficina_destino" class="form-select" required>
-                        <option value="">Seleccione</option>
-                        {% for oficina in oficinas %}
-                        <option value="{{ oficina.id_oficina }}">
-                            {{ oficina.ciudad }} - {{ oficina.nombre }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Transporte</label>
-                    <select name="transporte" class="form-select">
-                        <option value="">Sin asignar</option>
-                        {% for transporte in transportes %}
-                        <option value="{{ transporte.id_transporte }}">
-                            {{ transporte.placa }} - {{ transporte.get_tipo_display }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Seguro</label>
-                    <select name="seguro" class="form-select">
-                        <option value="">Sin seguro</option>
-                        {% for seguro in seguros %}
-                        <option value="{{ seguro.id_seguro }}">
-                            {{ seguro.nombre }} - ${{ seguro.costo }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">Datos del Destinatario</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Nombre Completo <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre_destinatario" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Cédula <span class="text-danger">*</span></label>
+                            <input type="text" name="cedula_destinatario" class="form-control" maxlength="10" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Teléfono <span class="text-danger">*</span></label>
+                            <input type="text" name="telefono_destinatario" class="form-control" maxlength="15" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-bold">Email</label>
+                            <input type="email" name="email_destinatario" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-bold">Dirección de Entrega <span class="text-danger">*</span></label>
+                            <input type="text" name="direccion_destino" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">Detalles del Envío</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label font-weight-bold">Descripción del paquete <span class="text-danger">*</span></label>
+                            <textarea name="descripcion" class="form-control" rows="2" required></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Transporte Asignado</label>
+                            <select id="transporte" name="transporte" class="form-select">
+                                <option value="">Sin asignar (Opcional)</option>
+                                {% for t in transportes %}
+                                <!-- Pasamos la capacidad en el atributo data-capacidad para validarlo con JS -->
+                                <option value="{{ t.id_transporte }}" data-capacidad="{{ t.capacidad_kg }}">{{ t.placa }} (Capacidad: {{ t.capacidad_kg }}kg)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Seguro</label>
+                            <select name="seguro" class="form-select">
+                                <option value="">Sin seguro (Opcional)</option>
+                                {% for s in seguros %}
+                                <option value="{{ s.id_seguro }}">{{ s.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label font-weight-bold">Peso (kg) <span class="text-danger">*</span></label>
+                            <input type="number" id="peso_kg" name="peso_kg" step="0.01" min="0.1" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-bold">Valor Declarado ($) <span class="text-danger">*</span></label>
+                            <input type="number" name="valor_declarado" step="0.01" min="0" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label font-weight-bold">Costo de Envío ($) <span class="text-danger">*</span></label>
+                            <input type="number" name="costo_envio" step="0.01" min="0" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Guardar Encomienda
+                        </button>
+                        <a href="/encomiendas/listadoEncomienda/" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
             </div>
-
-            <hr class="my-4">
-
-            <h5 class="mb-3">Datos del destinatario</h5>
-            <div class="row g-3">
-                <div class="col-md-5">
-                    <label class="form-label">Nombre completo</label>
-                    <input type="text" name="nombre_destinatario"
-                           class="form-control" required>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Cédula</label>
-                    <input type="text" name="cedula_destinatario"
-                           maxlength="10" class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Correo</label>
-                    <input type="email" name="email_destinatario"
-                           class="form-control" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Teléfono</label>
-                    <input type="text" name="telefono_destinatario"
-                           class="form-control" required>
-                </div>
-                <div class="col-md-8">
-                    <label class="form-label">Dirección de entrega</label>
-                    <input type="text" name="direccion_destino"
-                           class="form-control" required>
-                </div>
-            </div>
-
-            <hr class="my-4">
-
-            <h5 class="mb-3">Información del paquete</h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Descripción</label>
-                    <textarea name="descripcion" rows="4"
-                              class="form-control" required></textarea>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Peso (kg)</label>
-                    <input type="number" name="peso_kg" step="0.01"
-                           min="0.01" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Valor declarado</label>
-                    <input type="number" name="valor_declarado" step="0.01"
-                           min="0" value="0" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Costo del envío</label>
-                    <input type="number" name="costo_envio" step="0.01"
-                           min="0" value="0" class="form-control" required>
-                </div>
-            </div>
-
-            <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Registrar encomienda
-                </button>
-                <a href="/encomiendas/listadoEncomienda" class="btn btn-secondary">
-                    Cancelar
-                </a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 </div>
 </section>
 </main>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // 1. Regla personalizada: Origen y destino deben ser diferentes
+    $.validator.addMethod("distintoOrigen", function(value, element) {
+        var origen = $('#oficina_origen').val();
+        return value !== origen;
+    }, "La oficina de destino no puede ser la misma que la de origen.");
+
+    // 2. Regla personalizada: El peso no puede superar la capacidad del transporte
+    $.validator.addMethod("validaCapacidad", function(value, element) {
+        var idTransporte = $('#transporte').val();
+        if (!idTransporte) return true; // Si no hay transporte, pasa la validación
+        
+        var capacidadMax = $('#transporte option:selected').data('capacidad');
+        return parseFloat(value) <= parseFloat(capacidadMax);
+    }, "El peso supera la capacidad máxima del transporte seleccionado.");
+
+    // 3. Configuración del formulario
+    $("#formEncomienda").validate({
+        rules: {
+            oficina_destino: {
+                required: true,
+                distintoOrigen: true
+            },
+            peso_kg: {
+                required: true,
+                number: true,
+                min: 0.1,
+                validaCapacidad: true
+            },
+            costo_envio: {
+                required: true,
+                number: true,
+                min: 0 // El costo debe ser positivo
+            },
+            valor_declarado: {
+                required: true,
+                number: true,
+                min: 0
+            }
+        },
+        messages: {
+            oficina_origen: "Seleccione el origen.",
+            oficina_destino: {
+                required: "Seleccione el destino."
+            },
+            peso_kg: {
+                required: "Ingrese el peso.",
+                min: "El peso debe ser mayor a 0."
+            },
+            costo_envio: {
+                required: "Ingrese el costo de envío.",
+                min: "El costo no puede ser negativo."
+            }
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            error.addClass('invalid-feedback');
+            element.closest('div').append(error);
+        },
+        highlight: function (element, errorClass, validClass) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function (element, errorClass, validClass) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+    // Re-validar peso si el usuario cambia el transporte después de haber escrito el peso
+    $('#transporte').on('change', function() {
+        if ($('#peso_kg').val() !== "") {
+            $('#peso_kg').valid();
+        }
+    });
+});
+</script>
 {% endblock %}

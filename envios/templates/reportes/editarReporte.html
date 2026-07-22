@@ -1,0 +1,53 @@
+{% extends "plantillaprincipal.html" %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Editar Reporte</h4>
+            </div>
+            <div class="card-body p-4">
+                <p><strong>Encomienda:</strong> {{ reporte.encomienda.codigo_seguimiento }}</p>
+                
+                <form action="/reportes/actualizarReporte/{{ reporte.id_reporte }}/" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Tipo de Reporte <span class="text-danger">*</span></label>
+                        <select name="tipo" class="form-select" required>
+                            {% for valor, texto in tipos_reporte %}
+                            <option value="{{ valor }}" {% if reporte.tipo == valor %}selected{% endif %}>{{ texto }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Detalle <span class="text-danger">*</span></label>
+                        <textarea name="detalle" class="form-control" rows="4" required>{{ reporte.detalle }}</textarea>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" name="resuelto" id="checkResuelto" {% if reporte.resuelto %}checked{% endif %}>
+                        <label class="form-check-label font-weight-bold" for="checkResuelto">
+                            Marcar reporte como resuelto
+                        </label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning">Actualizar Reporte</button>
+                        <a href="/reportes/listadoReporte/" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

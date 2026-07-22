@@ -4,12 +4,17 @@
 <section class="section">
 <div class="container">
 
-<div class="mb-4">
-    <h2>Reportes y novedades</h2>
-    <p class="text-muted mb-0">
-        Incidentes registrados durante el traslado de las encomiendas.
-    </p>
+<!-- INICIO DEL ENCABEZADO MODIFICADO -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Reportes y novedades</h2>
+        <p class="text-muted mb-0">
+            Incidentes registrados durante el traslado de las encomiendas.
+        </p>
+    </div>
+
 </div>
+<!-- FIN DEL ENCABEZADO MODIFICADO -->
 
 <div class="card shadow-sm">
     <div class="card-body">
@@ -22,13 +27,13 @@
                         <th>Detalle</th>
                         <th>Fecha</th>
                         <th>Estado</th>
-                        <th></th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for reporte in reportes %}
                     <tr>
-                        <td>{{ reporte.encomienda.codigo_seguimiento }}</td>
+                        <td><strong>{{ reporte.encomienda.codigo_seguimiento }}</strong></td>
                         <td>{{ reporte.get_tipo_display }}</td>
                         <td>{{ reporte.detalle }}</td>
                         <td>{{ reporte.fecha_reporte|date:"d/m/Y H:i" }}</td>
@@ -39,11 +44,32 @@
                                 <span class="badge text-bg-warning">Pendiente</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <a href="/encomiendas/detalleEncomienda/{{ reporte.encomienda.id_encomienda }}"
-                               class="btn btn-sm btn-outline-primary">
-                                Ver envío
+                        <td class="text-center">
+                            <!-- Botón para ver la encomienda -->
+                            <a href="/encomiendas/detalleEncomienda/{{ reporte.encomienda.id_encomienda }}/"
+                               class="btn btn-sm btn-outline-primary me-1" title="Ver envío">
+                                <i class="bi bi-box-seam"></i>
                             </a>
+                            
+                            <!-- Botón para marcar resuelto (Solo si no está resuelto) -->
+                            {% if not reporte.resuelto %}
+                            <a href="/reportes/resolverReporte/{{ reporte.id_reporte }}/" 
+                               class="btn btn-sm btn-success me-1" title="Marcar como Resuelto">
+                                <i class="bi bi-check-circle"></i>
+                            </a>
+                            {% endif %}
+
+                            <!-- Editar -->
+                            <a href="/reportes/editarReporte/{{ reporte.id_reporte }}/" 
+                               class="btn btn-sm btn-warning me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+
+                            <!-- Eliminar con SweetAlert -->
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    onclick="confirmarEliminacionReporte('{{ reporte.id_reporte }}')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </td>
                     </tr>
                     {% empty %}
@@ -62,4 +88,40 @@
 </div>
 </section>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarEliminacionReporte(id) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Este reporte será eliminado permanentemente.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/reportes/eliminarReporte/${id}/`;
+            }
+        });
+    }
+</script>
+
+<!-- Alertas SweetAlert2 de Django si las usas aquí también -->
+{% if messages %}
+  {% for message in messages %}
+    <script>
+      Swal.fire({
+        icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+        title: "{% if message.tags == 'error' %}Atención{% else %}¡Logrado!{% endif %}",
+        text: "{{ message }}",
+        timer: 3500,
+        showConfirmButton: false
+      });
+    </script>
+  {% endfor %}
+{% endif %}
+
 {% endblock %}

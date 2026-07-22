@@ -51,6 +51,10 @@ urlpatterns = [
     path('reportes/listadoReporte/', views.listadoReporte, name='listadoReporte'),
     path('reportes/nuevoReporte/<int:id>/', views.nuevoReporte, name='nuevoReporte'),
     path('reportes/guardarReporte/', views.guardarReporte, name='guardarReporte'),
+    path('reportes/editarReporte/<int:id>/', views.editarReporte, name='editarReporte'),
+    path('reportes/actualizarReporte/<int:id>/', views.actualizarReporte, name='actualizarReporte'),
+    path('reportes/eliminarReporte/<int:id>/', views.eliminarReporte, name='eliminarReporte'),
+    path('reportes/resolverReporte/<int:id>/', views.resolverReporte, name='resolverReporte'),
 
     # Notificaciones
     path('notificaciones/listadoNotificacion/', views.listadoNotificacion, name='listadoNotificacion'),
