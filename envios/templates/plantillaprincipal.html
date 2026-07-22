@@ -127,7 +127,7 @@
                         <ul>
                             <li><a href="/encomiendas/listadoEncomienda/">Listado de encomiendas</a></li>
                             <li><a href="/encomiendas/nuevaEncomienda/">Registrar encomienda</a></li>
-                            <li><a href="/seguimiento/seguimientoEncomienda/">Seguimiento</a></li>
+                            <li><a href="/seguimiento/seguimientoEncomienda/">Seguimiento (Admin)</a></li>
                         </ul>
                     </li>
 
@@ -143,9 +143,9 @@
                         </ul>
                     </li>
                     {% else %}
-                    <!-- MENÚ PARA CLIENTES / USUARIOS NORMALES (Solo Seguimiento) -->
+                    <!-- MENÚ PARA CLIENTES / USUARIOS NORMALES -->
                     <li>
-                        <a href="/seguimiento/seguimientoEncomienda/" class="{% if '/seguimiento/' in request.path %}active{% endif %}">Seguimiento</a>
+                        <a href="/seguimiento/seguimientoEncomienda/" class="{% if '/seguimiento/' in request.path %}active{% endif %}">Mis Envíos</a>
                     </li>
                     {% endif %}
 

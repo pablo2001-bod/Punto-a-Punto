@@ -2,12 +2,6 @@ from django.urls import path
 from envios import views
 
 urlpatterns = [
-    # Autenticación y Registro
-    path('login/', views.login_view, name='login'),
-    path('registro/', views.registro_view, name='registro'),
-    path('logout/', views.logout_view, name='logout'),
-
-    # Inicio
     path('', views.inicio, name='inicio'),
     
     # Clientes
@@ -49,8 +43,9 @@ urlpatterns = [
     path('encomiendas/detalleEncomienda/<int:id>/', views.detalleEncomienda, name='detalleEncomienda'),
     path('encomiendas/actualizarEstadoEncomienda/<int:id>/', views.actualizarEstadoEncomienda, name='actualizarEstadoEncomienda'),
 
-    # Seguimiento
+    # Seguimiento (Admin y Cliente separados)
     path('seguimiento/seguimientoEncomienda/', views.seguimientoEncomienda, name='seguimientoEncomienda'),
+    path('seguimiento/mis-envios/', views.seguimientoClienteView, name='seguimientoCliente'),
 
     # Reportes y Novedades
     path('reportes/listadoReporte/', views.listadoReporte, name='listadoReporte'),

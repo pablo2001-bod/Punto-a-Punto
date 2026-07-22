@@ -1,0 +1,87 @@
+{% extends "plantillaprincipal.html" %}
+{% block titulo %}Mis Envíos | Punto a Punto{% endblock %}
+
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-box-seam text-primary"></i> Mis Encomiendas</h2>
+            <p class="text-muted">Aquí puedes visualizar el estado actual y el historial de todos tus envíos registrados.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    {% if encomiendas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Destinatario</th>
+                                    <th>Origen ➔ Destino</th>
+                                    <th>Peso / Costo</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Registro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in encomiendas %}
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold text-primary">{{ e.codigo_seguimiento }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{{ e.nombre_destinatario }}</strong><br>
+                                        <small class="text-muted">{{ e.telefono_destinatario }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="d-block text-muted">De: {{ e.oficina_origen }}</small>
+                                        <small class="d-block text-muted">A: {{ e.oficina_destino }}</small>
+                                    </td>
+                                    <td>
+                                        {{ e.peso_kg }} kg<br>
+                                        <span class="text-success fw-semibold">${{ e.costo_envio }}</span>
+                                    </td>
+                                    <td>
+                                        {% if e.estado == 'REGISTRADO' %}
+                                            <span class="badge bg-secondary">Registrado</span>
+                                        {% elif e.estado == 'EN_CAMINO' %}
+                                            <span class="badge bg-warning text-dark">En Camino</span>
+                                        {% elif e.estado == 'ENTREGADA' %}
+                                            <span class="badge bg-success">Entregada</span>
+                                        {% else %}
+                                            <span class="badge bg-info text-dark">{{ e.get_estado_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ e.fecha_registro|date:"d/m/Y H:i" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                        </div>
+                        <h5 class="text-secondary">No tienes encomiendas registradas a tu nombre</h5>
+                        <p class="text-muted small">Cuando realices un envío en oficina y se te asigne como remitente, aparecerá reflejado aquí automáticamente.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</section>
+</main>
+{% endblock %}
