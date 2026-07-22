@@ -1,11 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Index - Logis Bootstrap Template</title>
+    <title>{% block titulo %}Punto a Punto{% endblock %}</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -18,47 +18,56 @@
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
-    <!-- Vendor CSS Files -->
+    <!-- Vendor CSS Files (LOCALES) -->
     <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
     <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
     <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
     <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
     <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/sweetalert/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/vendor/fileinput/fileinput.min.css' %}" rel="stylesheet">
 
     <!-- Main CSS File -->
     <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
-    
-    <!-- Diseño del encabezado -->
+
+    <!-- LIBRERÍAS JS PRINCIPALES (LOCALES) -->
+    <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/jquery-validation/jquery.validate.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/sweetalert/sweetalert2.min.js' %}"></script>
+
+    <!-- ESTILOS GLOBALES: Header y Errores de Validación en Rojo -->
     <style>
-    #header {
-        background-color: #0e1d34 !important;
-    }
+        #header {
+            background-color: #0e1d34 !important;
+        }
+        #header .sitename {
+            color: white !important;
+        }
+        #header .navmenu > ul > li > a {
+            color: white !important;
+        }
+        #header .navmenu > ul > li > a:hover,
+        #header .navmenu > ul > li > a.active {
+            color: #0d6efd !important;
+        }
 
-    #header .sitename {
-        color: white !important;
-    }
+        /* ===== REGLAS CSS PARA VALIDACIÓN EN ROJO ===== */
+        label.error {
+            color: #dc3545 !important;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 5px;
+            display: block;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid #dc3545 !important;
+            background-color: #fff8f8 !important;
+        }
+    </style>
+</head>
 
-    #header .navmenu > ul > li > a {
-        color: white !important;
-    }
-
-    #header .navmenu > ul > li > a:hover,
-    #header .navmenu > ul > li > a.active {
-        color: #0d6efd !important;
-    }
-</style>
-
-    <!-- =======================================================
-    * Template Name: Logis
-    * Template URL: https://bootstrapmade.com/logis-bootstrap-logistics-website-template/
-    * Updated: Aug 07 2024 with Bootstrap v5.3.3
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
-    </head>
-
-    <body class="index-page">
+<body class="index-page">
 
     <header id="header" class="header d-flex align-items-center fixed-top dark-background">
         <div class="container-fluid container-xl position-relative d-flex align-items-center">
@@ -145,70 +154,25 @@
 
         </div>
     </header>
-{% block contenido %}
-{% endblock %}
+
+    {% block contenido %}
+    {% endblock %}
+
     <footer id="footer" class="footer dark-background">
-
         <div class="container footer-top">
-        <div class="row gy-4">
-            <div class="col-lg-5 col-md-12 footer-about">
-            <a href="index.html" class="logo d-flex align-items-center">
-                <span class="sitename">Logis</span>
-            </a>
-            <p>Cras fermentum odio eu feugiat lide par naso tierra. Justo eget nada terra videa magna derita valies darta donna mare fermentum iaculis eu non diam phasellus.</p>
-            <div class="social-links d-flex mt-4">
-                <a href=""><i class="bi bi-twitter-x"></i></a>
-                <a href=""><i class="bi bi-facebook"></i></a>
-                <a href=""><i class="bi bi-instagram"></i></a>
-                <a href=""><i class="bi bi-linkedin"></i></a>
+            <div class="row gy-4">
+                <div class="col-lg-5 col-md-12 footer-about">
+                    <a href="/" class="logo d-flex align-items-center">
+                        <span class="sitename">Punto a Punto</span>
+                    </a>
+                    <p>Sistema de gestión y seguimiento de transportes y encomiendas a nivel nacional.</p>
+                </div>
             </div>
-            </div>
-
-            <div class="col-lg-2 col-6 footer-links">
-            <h4>Useful Links</h4>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">About us</a></li>
-                <li><a href="#">Services</a></li>
-                <li><a href="#">Terms of service</a></li>
-                <li><a href="#">Privacy policy</a></li>
-            </ul>
-            </div>
-
-            <div class="col-lg-2 col-6 footer-links">
-            <h4>Our Services</h4>
-            <ul>
-                <li><a href="#">Web Design</a></li>
-                <li><a href="#">Web Development</a></li>
-                <li><a href="#">Product Management</a></li>
-                <li><a href="#">Marketing</a></li>
-                <li><a href="#">Graphic Design</a></li>
-            </ul>
-            </div>
-
-            <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
-            <h4>Contact Us</h4>
-            <p>A108 Adam Street</p>
-            <p>New York, NY 535022</p>
-            <p>United States</p>
-            <p class="mt-4"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-            <p><strong>Email:</strong> <span>info@example.com</span></p>
-            </div>
-
-        </div>
         </div>
 
         <div class="container copyright text-center mt-4">
-        <p>© <span>Copyright</span> <strong class="px-1 sitename">Logis</strong> <span>All Rights Reserved</span></p>
-        <div class="credits">
-            <!-- All the links in the footer should remain intact. -->
-            <!-- You can delete the links only if you've purchased the pro version. -->
-            <!-- Licensing information: https://bootstrapmade.com/license/ -->
-            <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
-            Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a> Distributed by <a href=“https://themewagon.com>ThemeWagon
+            <p>© <span>Copyright</span> <strong class="px-1 sitename">Punto a Punto</strong> <span>Todos los derechos reservados</span></p>
         </div>
-        </div>
-
     </footer>
 
     <!-- Scroll Top -->
@@ -217,9 +181,7 @@
     <!-- Preloader -->
     <div id="preloader"></div>
 
-    <!-- Vendor JS Files -->
-    <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+    <!-- Vendor JS Files Extras (LOCALES) -->
     <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
     <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
     <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
@@ -228,6 +190,40 @@
     <!-- Main JS File -->
     <script src="{% static 'assets/js/main.js' %}"></script>
 
-    </body>
+    <!-- Función Global de SweetAlert2 para Confirmar Eliminación -->
+    <script>
+        function confirmarEliminacion(event, url) {
+            event.preventDefault();
+            Swal.fire({
+                title: '¿Está seguro?',
+                text: "No podrá revertir esta acción",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        }
+    </script>
 
+    <!-- Mensajes Flash de Django con SweetAlert2 -->
+    {% if messages %}
+        {% for mensaje in messages %}
+        <script>
+            Swal.fire({
+                title: 'Confirmación',
+                text: '{{ mensaje }}',
+                icon: '{% if mensaje.tags == "error" %}error{% else %}success{% endif %}',
+                confirmButtonText: 'Aceptar'
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+
+</body>
 </html>
