@@ -1,0 +1,147 @@
+{% extends 'plantillaprincipal.html' %}
+{% block contenido %}
+<main class="main" style="padding-top: 105px;">
+<section class="section">
+<div class="container">
+
+<div class="row justify-content-center">
+    <div class="col-lg-8"> <!-- Se amplió ligeramente a col-lg-8 porque el formulario tiene más campos -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0 text-dark">
+                    <i class="bi bi-pencil-square"></i>
+                    Editar Encomienda: {{ encomienda.codigo_seguimiento }}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                
+                <form method="POST" action="/encomiendas/actualizarEncomienda/{{ encomienda.id_encomienda }}/">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Cliente</label>
+                        <select name="cliente" class="form-select" required>
+                            {% for c in clientes %}
+                                <option value="{{ c.id_cliente }}" {% if encomienda.cliente.id_cliente == c.id_cliente %}selected{% endif %}>
+                                    {{ c.apellidos }} {{ c.nombres }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Oficina Origen</label>
+                            <select name="oficina_origen" class="form-select" required>
+                                {% for o in oficinas %}
+                                    <option value="{{ o.id_oficina }}" {% if encomienda.oficina_origen.id_oficina == o.id_oficina %}selected{% endif %}>
+                                        {{ o.ciudad }} - {{ o.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Oficina Destino</label>
+                            <select name="oficina_destino" class="form-select" required>
+                                {% for o in oficinas %}
+                                    <option value="{{ o.id_oficina }}" {% if encomienda.oficina_destino.id_oficina == o.id_oficina %}selected{% endif %}>
+                                        {{ o.ciudad }} - {{ o.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Transporte</label>
+                            <select name="transporte" class="form-select">
+                                <option value="">-- Sin transporte asignado --</option>
+                                {% for t in transportes %}
+                                    <option value="{{ t.id_transporte }}" {% if encomienda.transporte and encomienda.transporte.id_transporte == t.id_transporte %}selected{% endif %}>
+                                        {{ t.placa }} - {{ t.marca }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Seguro</label>
+                            <select name="seguro" class="form-select">
+                                <option value="">-- Sin seguro --</option>
+                                {% for s in seguros %}
+                                    <option value="{{ s.id_seguro }}" {% if encomienda.seguro and encomienda.seguro.id_seguro == s.id_seguro %}selected{% endif %}>
+                                        {{ s.nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Datos del Destinatario</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre Destinatario</label>
+                            <input type="text" name="nombre_destinatario" class="form-control" value="{{ encomienda.nombre_destinatario }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Cédula Destinatario</label>
+                            <input type="text" name="cedula_destinatario" class="form-control" value="{{ encomienda.cedula_destinatario }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email Destinatario</label>
+                            <input type="email" name="email_destinatario" class="form-control" value="{{ encomienda.email_destinatario }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Teléfono Destinatario</label>
+                            <input type="text" name="telefono_destinatario" class="form-control" value="{{ encomienda.telefono_destinatario }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dirección Destino</label>
+                        <input type="text" name="direccion_destino" class="form-control" value="{{ encomienda.direccion_destino }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion" class="form-control" rows="3" required>{{ encomienda.descripcion }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Peso (Kg)</label>
+                            <input type="number" step="0.01" name="peso_kg" class="form-control" value="{{ encomienda.peso_kg }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Valor Declarado</label>
+                            <input type="number" step="0.01" name="valor_declarado" class="form-control" value="{{ encomienda.valor_declarado }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Costo Envío</label>
+                            <input type="number" step="0.01" name="costo_envio" class="form-control" value="{{ encomienda.costo_envio }}">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle"></i> Actualizar
+                        </button>
+                        <a href="/encomiendas/listadoEncomienda/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</main>
+{% endblock %}

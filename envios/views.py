@@ -288,6 +288,54 @@ def guardarEncomienda(request):
         )
         return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
     return redirect("/encomiendas/listadoEncomienda/")
+def editarEncomienda(request, id):
+    encomienda = get_object_or_404(Encomienda, id_encomienda=id)
+    datos = {
+        "encomienda": encomienda,
+        "clientes": Cliente.objects.all().order_by("apellidos", "nombres"),
+        "oficinas": Oficina.objects.all().order_by("ciudad", "nombre"),
+        "transportes": Transporte.objects.all().order_by("placa"),
+        "seguros": Seguro.objects.filter(activo=True).order_by("nombre"),
+    }
+    return render(request, "encomiendas/editarEncomienda.html", datos)
+
+def actualizarEncomienda(request, id):
+    encomienda = get_object_or_404(Encomienda, id_encomienda=id)
+    if request.method == "POST":
+        encomienda.cliente = Cliente.objects.get(id_cliente=request.POST["cliente"])
+        encomienda.oficina_origen = Oficina.objects.get(id_oficina=request.POST["oficina_origen"])
+        encomienda.oficina_destino = Oficina.objects.get(id_oficina=request.POST["oficina_destino"])
+
+        transporte = None
+        if request.POST.get("transporte"):
+            transporte = Transporte.objects.get(id_transporte=request.POST["transporte"])
+        encomienda.transporte = transporte
+
+        seguro = None
+        if request.POST.get("seguro"):
+            seguro = Seguro.objects.get(id_seguro=request.POST["seguro"])
+        encomienda.seguro = seguro
+
+        encomienda.nombre_destinatario = request.POST["nombre_destinatario"]
+        encomienda.cedula_destinatario = request.POST["cedula_destinatario"]
+        encomienda.email_destinatario = request.POST["email_destinatario"]
+        encomienda.telefono_destinatario = request.POST["telefono_destinatario"]
+        encomienda.direccion_destino = request.POST["direccion_destino"]
+        encomienda.descripcion = request.POST["descripcion"]
+        encomienda.peso_kg = request.POST["peso_kg"]
+        encomienda.valor_declarado = request.POST.get("valor_declarado", 0)
+        encomienda.costo_envio = request.POST.get("costo_envio", 0)
+        encomienda.save()
+        
+        messages.success(request, "Encomienda actualizada correctamente.")
+        return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
+    return redirect("/encomiendas/listadoEncomienda/")
+
+def eliminarEncomienda(request, id):
+    encomienda = get_object_or_404(Encomienda, id_encomienda=id)
+    encomienda.delete()
+    messages.success(request, "Encomienda eliminada correctamente.")
+    return redirect("/encomiendas/listadoEncomienda/")
 
 def detalleEncomienda(request, id):
     encomienda = Encomienda.objects.select_related(
