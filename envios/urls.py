@@ -27,6 +27,7 @@ urlpatterns = [
     path('transportes/guardarTransporte/', views.guardarTransporte, name='guardarTransporte'),
     path('transportes/editarTransporte/<int:id>/', views.editarTransporte, name='editarTransporte'),
     path('transportes/actualizarTransporte/<int:id>/', views.actualizarTransporte, name='actualizarTransporte'),
+    path('transportes/eliminarTransporte/<int:id>/', views.eliminarTransporte, name='eliminarTransporte'),
 
     # Seguros
     path('seguros/listadoSeguro/', views.listadoSeguro, name='listadoSeguro'),

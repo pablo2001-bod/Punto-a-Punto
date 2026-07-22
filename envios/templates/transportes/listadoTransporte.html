@@ -36,7 +36,15 @@
                         <td>{{ transporte.get_tipo_display }}</td>
                         <td>{{ transporte.marca }} {{ transporte.modelo }}</td>
                         <td>{{ transporte.capacidad_kg }} kg</td>
-                        <td><span class="badge text-bg-primary">{{ transporte.get_estado_display }}</span></td>
+                        <td>
+                            {% if transporte.estado == 'DISPONIBLE' %}
+                                <span class="badge text-bg-success">{{ transporte.get_estado_display }}</span>
+                            {% elif transporte.estado == 'EN_RUTA' %}
+                                <span class="badge text-bg-primary">{{ transporte.get_estado_display }}</span>
+                            {% else %}
+                                <span class="badge text-bg-warning text-dark">{{ transporte.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
                         <td class="text-center">
                             <a href="/transportes/editarTransporte/{{ transporte.id_transporte }}/" class="btn btn-warning btn-sm me-1" title="Editar">
                                 <i class="bi bi-pencil-square"></i>
@@ -63,13 +71,15 @@
 </section>
 </main>
 
-<!-- SweetAlert2 -->
+<!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Script para confirmación de eliminación -->
 <script>
     function confirmarEliminacion(id, placa) {
         Swal.fire({
             title: '¿Estás seguro?',
-            text: `Vas a eliminar el transporte con placa: ${placa}`,
+            text: `Vas a eliminar el transporte con placa: ${placa}. Se desvinculará de las encomiendas asociadas.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
@@ -78,9 +88,26 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Redirige a la URL de eliminación (asegurando la barra diagonal final)
                 window.location.href = `/transportes/eliminarTransporte/${id}/`;
             }
         });
     }
 </script>
+
+<!-- SweetAlert2 para mostrar mensajes de éxito/error de Django -->
+{% if messages %}
+  {% for message in messages %}
+    <script>
+      Swal.fire({
+        icon: "{% if message.tags == 'error' %}error{% else %}success{% endif %}",
+        title: "{% if message.tags == 'error' %}Atención{% else %}¡Logrado!{% endif %}",
+        text: "{{ message }}",
+        timer: 3500,
+        showConfirmButton: false
+      });
+    </script>
+  {% endfor %}
+{% endif %}
+
 {% endblock %}
