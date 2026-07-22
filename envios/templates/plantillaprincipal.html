@@ -33,6 +33,9 @@
 
     <!-- LIBRERÍAS JS PRINCIPALES (LOCALES) -->
     <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    
+    <!-- ⚠️ CORRECCIÓN CLAVE: Cargar jQuery Base antes de jquery-validation -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="{% static 'assets/vendor/jquery-validation/jquery.validate.min.js' %}"></script>
     <script src="{% static 'assets/vendor/sweetalert/sweetalert2.min.js' %}"></script>
 
@@ -211,13 +214,13 @@
         }
     </script>
 
-    <!-- Mensajes Flash de Django con SweetAlert2 -->
+    <!-- Mensajes Flash de Django con SweetAlert2 (|safe limpia caracteres raros) -->
     {% if messages %}
         {% for mensaje in messages %}
         <script>
             Swal.fire({
-                title: 'Confirmación',
-                text: '{{ mensaje }}',
+                title: 'Atención',
+                html: '{{ mensaje|safe }}',
                 icon: '{% if mensaje.tags == "error" %}error{% else %}success{% endif %}',
                 confirmButtonText: 'Aceptar'
             });
