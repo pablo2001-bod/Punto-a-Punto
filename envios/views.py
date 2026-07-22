@@ -60,14 +60,13 @@ def guardarCliente(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Cliente registrado correctamente.")
-            # Cambiar esto:
-            # return redirect("/clientes/listadoCliente")
-            
-            # Por esto:
-            return redirect("listadoCliente") 
+            return redirect("/clientes/listadoCliente/")
         else:
+            # IMPRIME LOS ERRORES EN LA CONSOLA DE DJANGO PARA VER QUÉ FALLA
+            print("ERRORES DEL FORMULARIO DE CLIENTE:", form.errors)
+            messages.error(request, f"Error al guardar: {form.errors}")
             return render(request, "clientes/nuevoCliente.html", {"form": form})
-    return redirect("listadoCliente")
+    return redirect("/clientes/listadoCliente/")
 
 def editarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)
