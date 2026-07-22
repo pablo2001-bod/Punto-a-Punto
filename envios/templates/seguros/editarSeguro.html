@@ -1,5 +1,5 @@
 {% extends "plantillaprincipal.html" %}
-{% block titulo %}Nuevo Seguro | Punto a Punto{% endblock %}
+{% block titulo %}Editar Seguro | Punto a Punto{% endblock %}
 
 {% block contenido %}
 <main class="main" style="padding-top: 105px;">
@@ -9,12 +9,12 @@
 <div class="row justify-content-center">
     <div class="col-lg-9">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-shield-check"></i> Registrar seguro</h4>
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Editar seguro</h4>
             </div>
             <div class="card-body p-4">
-                <!-- novalidate desactiva los globos por defecto de HTML5 -->
-                <form id="formNuevoSeguro" action="/seguros/guardarSeguro/" method="post" novalidate>
+                <!-- Se asigna novalidate para activar las validaciones de jQuery -->
+                <form id="formEditarSeguro" action="/seguros/actualizarSeguro/{{ seguro.id_seguro }}/" method="post" novalidate>
                     {% csrf_token %}
                     <div class="row g-3">
                         
@@ -24,7 +24,8 @@
                             <input type="text" 
                                    name="nombre" 
                                    class="form-control" 
-                                   placeholder="Ej: Cobertura Gold 2026" 
+                                   value="{{ seguro.nombre }}" 
+                                   placeholder="Ej: Cobertura Total" 
                                    maxlength="50">
                         </div>
 
@@ -34,9 +35,10 @@
                             <input type="number" 
                                    name="porcentaje_cobertura"
                                    step="0.01" 
-                                   min="0.01" 
+                                   min="0" 
                                    max="100"
                                    class="form-control" 
+                                   value="{{ seguro.porcentaje_cobertura }}" 
                                    placeholder="Ej: 80.00">
                         </div>
 
@@ -46,9 +48,9 @@
                             <input type="number" 
                                    name="costo" 
                                    step="0.01"
-                                   min="0.01" 
-                                   max="10000"
+                                   min="0" 
                                    class="form-control" 
+                                   value="{{ seguro.costo }}" 
                                    placeholder="Ej: 15.50">
                         </div>
 
@@ -58,7 +60,7 @@
                             <textarea name="descripcion" 
                                       rows="4"
                                       class="form-control" 
-                                      placeholder="Describa brevemente la cobertura que ofrece este seguro..."></textarea>
+                                      placeholder="Describa brevemente la cobertura que ofrece este seguro...">{{ seguro.descripcion }}</textarea>
                         </div>
 
                         <!-- Campo ACTIVO -->
@@ -68,7 +70,7 @@
                                        name="activo"
                                        class="form-check-input" 
                                        id="activo" 
-                                       checked>
+                                       {% if seguro.activo %}checked{% endif %}>
                                 <label class="form-check-label font-weight-bold" for="activo">
                                     Seguro activo
                                 </label>
@@ -78,8 +80,8 @@
 
                     <!-- Botones de Acción -->
                     <div class="mt-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Guardar
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-arrow-repeat"></i> Actualizar
                         </button>
                         <a href="/seguros/listadoSeguro/" class="btn btn-secondary">
                             Cancelar
@@ -95,87 +97,66 @@
 </section>
 </main>
 
-<!-- SCRIPT DE VALIDACIÓN COMPLETO Y CORREGIDO -->
+<!-- SCRIPT DE VALIDACIÓN EN ROJO -->
 <script>
 $(document).ready(function() {
 
-    // Regla 1: Nombre válido (Letras, números, espacios y guiones)
-    $.validator.addMethod("nombreValido", function(value, element) {
-        return this.optional(element) || /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\.\-]+$/.test(value);
-    }, "El nombre solo puede contener letras, números, espacios o guiones.");
+    //  Solo letras y espacios para el Nombre
+    $.validator.addMethod("soloTexto", function(value, element) {
+        return this.optional(element) || /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
+    }, "El nombre solo puede contener letras.");
 
-    // Regla 2: Máximo 2 decimales
-    $.validator.addMethod("maxDecimales", function(value, element) {
-        return this.optional(element) || /^\d+(\.\d{1,2})?$/.test(value);
-    }, "Solo se permiten hasta 2 decimales.");
-
-    // Regla 3: Bloquear ceros repetidos a la izquierda (Ej: 0000, 0005)
-    $.validator.addMethod("sinCerosRepetidos", function(value, element) {
-        if (this.optional(element)) return true;
-        return !(/^0{2,}/.test(value));
-    }, "Ingrese un número válido (sin ceros innecesarios al inicio).");
-
-    // Configuración general de jQuery Validate
-    $("#formNuevoSeguro").validate({
+    // Configuración validador para Editar Seguro
+    $("#formEditarSeguro").validate({
         rules: {
             nombre: {
                 required: true,
                 minlength: 3,
-                maxlength: 50,
-                nombreValido: true
+                soloTexto: true
             },
             porcentaje_cobertura: {
                 required: true,
                 number: true,
-                min: 0.01,
-                max: 100,
-                maxDecimales: true,
-                sinCerosRepetidos: true
+                min: 0.1,
+                max: 100
             },
             costo: {
                 required: true,
                 number: true,
-                min: 0.01,
-                max: 10000,
-                maxDecimales: true,
-                sinCerosRepetidos: true
+                min: 0
             },
             descripcion: {
                 required: true,
-                minlength: 10,
-                maxlength: 255
+                minlength: 10
             }
         },
         messages: {
             nombre: {
                 required: "El nombre del seguro es obligatorio.",
-                minlength: "Debe ingresar al menos 3 caracteres.",
-                maxlength: "El nombre no puede superar los 50 caracteres."
+                minlength: "Debe tener al menos 3 caracteres."
             },
             porcentaje_cobertura: {
                 required: "Ingrese el porcentaje de cobertura.",
-                number: "Ingrese un número válido.",
-                min: "La cobertura debe ser mayor al 0%.",
-                max: "La cobertura no puede ser mayor al 100%."
+                number: "Ingrese un valor numérico válido.",
+                min: "La cobertura debe ser mayor a 0%.",
+                max: "La cobertura no puede superar el 100%."
             },
             costo: {
                 required: "Ingrese el costo del seguro.",
                 number: "Ingrese un valor numérico válido.",
-                min: "El costo debe ser mayor a $0.00.",
-                max: "El costo no puede superar los $10,000.00."
+                min: "El costo no puede ser negativo."
             },
             descripcion: {
                 required: "La descripción es obligatoria.",
-                minlength: "Escriba al menos 10 caracteres explicativos.",
-                maxlength: "La descripción no puede exceder los 255 caracteres."
+                minlength: "Escriba una descripción de al menos 10 caracteres."
             }
         },
 
-        // Marcado de errores en ROJO con Bootstrap 5
+        // resaltado visual en ROJO
         errorElement: 'span',
         errorPlacement: function (error, element) {
             error.addClass('invalid-feedback font-weight-bold');
-            element.after(error);
+            element.closest('.col-md-6, .col-md-3, .col-12').append(error);
         },
         highlight: function (element) {
             $(element).addClass('is-invalid').removeClass('is-valid');

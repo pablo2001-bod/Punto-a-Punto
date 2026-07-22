@@ -351,6 +351,49 @@ def guardarSeguro(request):
         except Exception as e:
             messages.error(request, f"Error al registrar seguro: {e}")
     return redirect("/seguros/listadoSeguro/")
+#EDITAR
+
+def editarSeguro(request, id):
+    # Busca el seguro por su ID (si usa id_seguro en el modelo, cámbialo aquí)
+    seguro = get_object_or_404(Seguro, pk=id) 
+    
+    contexto = {
+        'seguro': seguro
+    }
+    return render(request, 'seguros/editarSeguro.html', contexto)
+
+
+# 2. Función para recibir los datos modificados y guardarlos
+def actualizarSeguro(request, id):
+    if request.method == 'POST':
+        seguro = get_object_or_404(Seguro, pk=id)
+        
+        # Recibir los valores del formulario
+        seguro.nombre = request.POST.get('nombre')
+        seguro.porcentaje_cobertura = request.POST.get('porcentaje_cobertura')
+        seguro.costo = request.POST.get('costo')
+        seguro.descripcion = request.POST.get('descripcion')
+        
+        # Manejo del checkbox activo (si viene marcado es True, de lo contrario False)
+        seguro.activo = True if request.POST.get('activo') else False
+        
+        # Guardar en la base de datos
+        seguro.save()
+        
+        # Mensaje de éxito para SweetAlert2
+        messages.success(request, 'El seguro ha sido actualizado correctamente.')
+        
+        return redirect('/seguros/listadoSeguro/')
+#ELIMINAR
+
+def eliminarSeguro(request, id):
+    # Si la clave primaria en tu modelo se llama 'id_seguro', cámbialo aquí:
+    seguro = get_object_or_404(Seguro, pk=id) 
+    seguro.delete()
+    
+    messages.success(request, 'El seguro ha sido eliminado correctamente.')
+    return redirect('/seguros/listadoSeguro/')
+
 
 # ==========================================
 # MÓDULO: Encomiendas (Solo Admin)
