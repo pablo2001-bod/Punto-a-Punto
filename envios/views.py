@@ -59,15 +59,20 @@ def guardarCliente(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Cliente registrado correctamente.")
-            return redirect("/clientes/listadoCliente")
+            # Cambiar esto:
+            # return redirect("/clientes/listadoCliente")
+            
+            # Por esto:
+            return redirect("listadoCliente") 
         else:
             return render(request, "clientes/nuevoCliente.html", {"form": form})
-    return redirect("/clientes/listadoCliente")
+    return redirect("listadoCliente")
 
 def editarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)
     form = ClienteForm(instance=cliente)
     return render(request, "clientes/editarCliente.html", {"form": form, "cliente": cliente})
+
 
 def actualizarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)
@@ -76,10 +81,10 @@ def actualizarCliente(request, id):
         if form.is_valid():
             form.save()
             messages.success(request, "Cliente actualizado correctamente.")
-            return redirect("/clientes/listadoCliente")
+            return redirect("listadoCliente") # <-- Usa el name de la URL
         else:
             return render(request, "clientes/editarCliente.html", {"form": form, "cliente": cliente})
-    return redirect("/clientes/listadoCliente")
+    return redirect("listadoCliente")
 
 def eliminarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)

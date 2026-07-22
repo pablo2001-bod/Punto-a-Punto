@@ -6,9 +6,9 @@ urlpatterns = [
     path('', views.inicio, name='inicio'),
     
     # Clientes
-    path('clientes/listadoCliente', views.listadoCliente, name='listadoCliente'),
-    path('clientes/nuevoCliente', views.nuevoCliente, name='nuevoCliente'),
-    path('clientes/guardarCliente', views.guardarCliente, name='guardarCliente'),
+    path('clientes/listadoCliente/', views.listadoCliente, name='listadoCliente'),
+    path('clientes/nuevoCliente/', views.nuevoCliente, name='nuevoCliente'),
+    path('clientes/guardarCliente/', views.guardarCliente, name='guardarCliente'),  
     path('clientes/editarCliente/<int:id>/', views.editarCliente, name='editarCliente'),
     path('clientes/actualizarCliente/<int:id>/', views.actualizarCliente, name='actualizarCliente'),
     path('clientes/eliminarCliente/<int:id>/', views.eliminarCliente, name='eliminarCliente'),
