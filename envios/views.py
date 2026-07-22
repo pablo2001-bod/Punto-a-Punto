@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from envios.models import Cliente, Oficina, Transporte, Seguro, Encomienda, Reporte, NotificacionCorreo
 from django.contrib import messages
+from django.conf import settings
+from django.core.mail import send_mail
+import logging
 import uuid
 from django.utils import timezone
 from envios.forms import ClienteForm, OficinaForm
@@ -9,8 +12,67 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 
+logger = logging.getLogger(__name__)
+
+
 def es_administrador(user):
     return user.is_authenticated and user.is_superuser
+
+
+def enviar_notificacion(encomienda, asunto, mensaje):
+    """Envía el aviso al remitente y al destinatario sin interrumpir el flujo principal."""
+    correos = {
+        (encomienda.cliente.email or "").strip(),
+        (encomienda.email_destinatario or "").strip(),
+    }
+    remitente = (
+        getattr(settings, "DEFAULT_FROM_EMAIL", "")
+        or getattr(settings, "EMAIL_HOST_USER", "")
+        or "no-reply@puntoapunto.com"
+    )
+
+    for correo in correos:
+        if not correo:
+            continue
+
+        enviado = False
+        error_envio = ""
+
+        try:
+            cantidad_enviada = send_mail(
+                subject=asunto,
+                message=mensaje,
+                from_email=remitente,
+                recipient_list=[correo],
+                fail_silently=False,
+            )
+            enviado = cantidad_enviada > 0
+        except Exception as error:
+            error_envio = str(error)
+            logger.exception(
+                "No se pudo enviar la notificación de la encomienda %s a %s",
+                encomienda.codigo_seguimiento,
+                correo,
+            )
+
+        try:
+            mensaje_registro = mensaje
+            if error_envio:
+                mensaje_registro += f"\n\nError de envío: {error_envio}"
+
+            NotificacionCorreo.objects.create(
+                encomienda=encomienda,
+                destinatario=correo,
+                asunto=asunto,
+                mensaje=mensaje_registro,
+                enviado=enviado,
+            )
+        except Exception:
+            logger.exception(
+                "No se pudo registrar la notificación de la encomienda %s",
+                encomienda.codigo_seguimiento,
+            )
+
 
 # ==========================================
 # MÓDULO: AUTENTICACIÓN Y REGISTRO
@@ -419,6 +481,16 @@ def guardarEncomienda(request):
                 valor_declarado=request.POST.get("valor_declarado", 0),
                 costo_envio=request.POST.get("costo_envio", 0),
             )
+            asunto = f"Encomienda registrada: {encomienda.codigo_seguimiento}"
+            mensaje_correo = (
+                "Su encomienda fue registrada correctamente.\n\n"
+                f"Código de seguimiento: {encomienda.codigo_seguimiento}\n"
+                f"Origen: {encomienda.oficina_origen}\n"
+                f"Destino: {encomienda.oficina_destino}\n"
+                f"Estado: {encomienda.get_estado_display()}\n"
+            )
+            enviar_notificacion(encomienda, asunto, mensaje_correo)
+
             messages.success(request, f"Encomienda registrada. Código: {encomienda.codigo_seguimiento}")
             return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
         except Exception as e:
@@ -487,6 +559,15 @@ def actualizarEstadoEncomienda(request, id):
             if encomienda.estado == "ENTREGADA":
                 encomienda.fecha_entrega = timezone.now()
             encomienda.save()
+
+            asunto = f"Actualización de encomienda {encomienda.codigo_seguimiento}"
+            mensaje_correo = (
+                "El estado de su encomienda cambió.\n\n"
+                f"Código: {encomienda.codigo_seguimiento}\n"
+                f"Nuevo estado: {encomienda.get_estado_display()}\n"
+            )
+            enviar_notificacion(encomienda, asunto, mensaje_correo)
+
             messages.success(request, "Estado actualizado correctamente.")
         except Exception as e:
             messages.error(request, f"Error al actualizar estado: {e}")
@@ -511,11 +592,21 @@ def guardarReporte(request):
     if request.method == "POST":
         try:
             encomienda = Encomienda.objects.get(id_encomienda=request.POST["encomienda_id"])
-            Reporte.objects.create(
+            reporte = Reporte.objects.create(
                 encomienda=encomienda,
                 tipo=request.POST["tipo"],
                 detalle=request.POST["detalle"]
             )
+
+            asunto = f"Novedad de encomienda {encomienda.codigo_seguimiento}"
+            mensaje_correo = (
+                "Se registró una novedad en su encomienda.\n\n"
+                f"Código: {encomienda.codigo_seguimiento}\n"
+                f"Tipo: {reporte.get_tipo_display()}\n"
+                f"Detalle: {reporte.detalle}\n"
+            )
+            enviar_notificacion(encomienda, asunto, mensaje_correo)
+
             messages.success(request, "Reporte registrado correctamente.")
             return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
         except Exception as e:
