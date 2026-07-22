@@ -101,7 +101,7 @@ def seguimientoEncomienda(request):
             "oficina_origen", "oficina_destino"
         ).filter(codigo_seguimiento__iexact=codigo).first()
     
-    return render(request, "seguimiento/seguimientoEncomiendaAdmin.html", {
+    return render(request, "seguimiento/seguimientoEncomienda.html", {
         "encomienda": encomienda_unica,
         "busqueda_realizada": busqueda_realizada
     })
