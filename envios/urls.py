@@ -1,8 +1,15 @@
+from django.contrib import admin
 from django.urls import path
 from envios import views
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', views.inicio, name='inicio'),
+    
+    # Autenticación
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('registro/', views.registro_view, name='registro'),
     
     # Clientes
     path('clientes/listadoCliente/', views.listadoCliente, name='listadoCliente'),
@@ -28,14 +35,13 @@ urlpatterns = [
     path('transportes/actualizarTransporte/<int:id>/', views.actualizarTransporte, name='actualizarTransporte'),
     path('transportes/eliminarTransporte/<int:id>/', views.eliminarTransporte, name='eliminarTransporte'),
 
-    # Seguros
+    # Seguros (RUTAS COMPLETAS)
     path('seguros/listadoSeguro/', views.listadoSeguro, name='listadoSeguro'),
     path('seguros/nuevoSeguro/', views.nuevoSeguro, name='nuevoSeguro'),
     path('seguros/guardarSeguro/', views.guardarSeguro, name='guardarSeguro'),
     path('seguros/editarSeguro/<int:id>/', views.editarSeguro, name='editarSeguro'),
     path('seguros/actualizarSeguro/<int:id>/', views.actualizarSeguro, name='actualizarSeguro'),
     path('seguros/eliminarSeguro/<int:id>/', views.eliminarSeguro, name='eliminarSeguro'),
-    
 
     # Encomiendas
     path('encomiendas/listadoEncomienda/', views.listadoEncomienda, name='listadoEncomienda'),
@@ -47,7 +53,7 @@ urlpatterns = [
     path('encomiendas/detalleEncomienda/<int:id>/', views.detalleEncomienda, name='detalleEncomienda'),
     path('encomiendas/actualizarEstadoEncomienda/<int:id>/', views.actualizarEstadoEncomienda, name='actualizarEstadoEncomienda'),
 
-    # Seguimiento (Admin y Cliente separados)
+    # Seguimiento
     path('seguimiento/seguimientoEncomienda/', views.seguimientoEncomienda, name='seguimientoEncomienda'),
     path('seguimiento/mis-envios/', views.seguimientoClienteView, name='seguimientoCliente'),
 

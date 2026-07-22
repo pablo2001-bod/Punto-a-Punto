@@ -44,7 +44,6 @@ def registro_view(request):
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
         
-        # Nuevos datos del cliente
         nombres = request.POST.get("nombres")
         apellidos = request.POST.get("apellidos")
         cedula = request.POST.get("cedula")
@@ -64,11 +63,9 @@ def registro_view(request):
             return render(request, "auth/registro.html")
 
         try:
-            # 1. Crear el usuario de Django
             user = User.objects.create_user(username=username, email=email, password=password1)
             user.save()
 
-            # 2. Crear el registro en Cliente vinculado al usuario y visible para el admin
             Cliente.objects.create(
                 user=user,
                 nombres=nombres,
@@ -91,7 +88,6 @@ def registro_view(request):
 # ==========================================
 @login_required(login_url="/login/")
 def seguimientoEncomienda(request):
-    # Vista exclusiva para el Administrador (Búsqueda por código)
     if not request.user.is_superuser:
         return redirect('seguimientoCliente')
         
@@ -112,7 +108,6 @@ def seguimientoEncomienda(request):
 
 @login_required(login_url="/login/")
 def seguimientoClienteView(request):
-    # Vista exclusiva para el Cliente Normal (Lista sus propias encomiendas automáticamente)
     if request.user.is_superuser:
         return redirect('seguimientoEncomienda')
 
@@ -325,7 +320,7 @@ def eliminarTransporte(request, id):
     return redirect("/transportes/listadoTransporte/")
 
 # ==========================================
-# MÓDULO: Seguros (Solo Admin)
+# MÓDULO: Seguros (Solo Admin) - CORREGIDO
 # ==========================================
 @user_passes_test(es_administrador, login_url="/seguimiento/seguimientoEncomienda/")
 def listadoSeguro(request):
@@ -351,49 +346,31 @@ def guardarSeguro(request):
         except Exception as e:
             messages.error(request, f"Error al registrar seguro: {e}")
     return redirect("/seguros/listadoSeguro/")
-#EDITAR
 
+@user_passes_test(es_administrador, login_url="/seguimiento/seguimientoEncomienda/")
 def editarSeguro(request, id):
-    # Busca el seguro por su ID (si usa id_seguro en el modelo, cámbialo aquí)
-    seguro = get_object_or_404(Seguro, pk=id) 
-    
-    contexto = {
-        'seguro': seguro
-    }
-    return render(request, 'seguros/editarSeguro.html', contexto)
+    seguro = get_object_or_404(Seguro, id_seguro=id) 
+    return render(request, 'seguros/editarSeguro.html', {'seguro': seguro})
 
-
-# 2. Función para recibir los datos modificados y guardarlos
+@user_passes_test(es_administrador, login_url="/seguimiento/seguimientoEncomienda/")
 def actualizarSeguro(request, id):
     if request.method == 'POST':
-        seguro = get_object_or_404(Seguro, pk=id)
-        
-        # Recibir los valores del formulario
+        seguro = get_object_or_404(Seguro, id_seguro=id)
         seguro.nombre = request.POST.get('nombre')
         seguro.porcentaje_cobertura = request.POST.get('porcentaje_cobertura')
         seguro.costo = request.POST.get('costo')
         seguro.descripcion = request.POST.get('descripcion')
-        
-        # Manejo del checkbox activo (si viene marcado es True, de lo contrario False)
         seguro.activo = True if request.POST.get('activo') else False
-        
-        # Guardar en la base de datos
         seguro.save()
-        
-        # Mensaje de éxito para SweetAlert2
         messages.success(request, 'El seguro ha sido actualizado correctamente.')
-        
-        return redirect('/seguros/listadoSeguro/')
-#ELIMINAR
-
-def eliminarSeguro(request, id):
-    # Si la clave primaria en tu modelo se llama 'id_seguro', cámbialo aquí:
-    seguro = get_object_or_404(Seguro, pk=id) 
-    seguro.delete()
-    
-    messages.success(request, 'El seguro ha sido eliminado correctamente.')
     return redirect('/seguros/listadoSeguro/')
 
+@user_passes_test(es_administrador, login_url="/seguimiento/seguimientoEncomienda/")
+def eliminarSeguro(request, id):
+    seguro = get_object_or_404(Seguro, id_seguro=id) 
+    seguro.delete()
+    messages.success(request, 'El seguro ha sido eliminado correctamente.')
+    return redirect('/seguros/listadoSeguro/')
 
 # ==========================================
 # MÓDULO: Encomiendas (Solo Admin)
