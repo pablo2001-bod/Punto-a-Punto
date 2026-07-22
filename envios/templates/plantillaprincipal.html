@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Index - Logis Bootstrap Template</title>
+    <title>Punto a Punto - Logística</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -29,7 +29,7 @@
     <!-- Main CSS File -->
     <link href="{% static 'assets/css/main.css' %}" rel="stylesheet">
     
-    <!-- Diseño del encabezado -->
+    <!-- Diseño del encabezado y sesión -->
     <style>
     #header {
         background-color: #0e1d34 !important;
@@ -47,18 +47,45 @@
     #header .navmenu > ul > li > a.active {
         color: #0d6efd !important;
     }
+
+    .user-session-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-left: 20px;
+    }
+
+    .user-greeting {
+        color: #fff;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-logout {
+        background-color: #dc3545;
+        color: white !important;
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-logout:hover {
+        background-color: #bb2d3b;
+        color: white !important;
+    }
 </style>
+</head>
 
-    <!-- =======================================================
-    * Template Name: Logis
-    * Template URL: https://bootstrapmade.com/logis-bootstrap-logistics-website-template/
-    * Updated: Aug 07 2024 with Bootstrap v5.3.3
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
-    </head>
-
-    <body class="index-page">
+<body class="index-page">
 
     <header id="header" class="header d-flex align-items-center fixed-top dark-background">
         <div class="container-fluid container-xl position-relative d-flex align-items-center">
@@ -69,11 +96,13 @@
 
             <nav id="navmenu" class="navmenu">
                 <ul>
-
+                    <!-- INICIO: Visible para todos los usuarios logueados -->
                     <li>
                         <a href="/" class="{% if request.path == '/' %}active{% endif %}">Inicio</a>
                     </li>
 
+                    <!-- MENÚS EXCLUSIVOS PARA EL ADMINISTRADOR (SUPERUSER) -->
+                    {% if request.user.is_superuser %}
                     <li>
                         <a href="/clientes/listadoCliente/" class="{% if '/clientes/' in request.path %}active{% endif %}">Clientes</a>
                     </li>
@@ -91,29 +120,14 @@
                     </li>
 
                     <li class="dropdown">
-                        <a href="#" class="{% if '/encomiendas/' in request.path or '/seguimiento/' in request.path %}active{% endif %}">
+                        <a href="#" class="{% if '/encomiendas/' in request.path %}active{% endif %}">
                             <span>Encomiendas</span>
                             <i class="bi bi-chevron-down toggle-dropdown"></i>
                         </a>
-
                         <ul>
-                            <li>
-                                <a href="/encomiendas/listadoEncomienda/">
-                                    Listado de encomiendas
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="/encomiendas/nuevaEncomienda/">
-                                    Registrar encomienda
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="/seguimiento/seguimientoEncomienda/">
-                                    Seguimiento
-                                </a>
-                            </li>
+                            <li><a href="/encomiendas/listadoEncomienda/">Listado de encomiendas</a></li>
+                            <li><a href="/encomiendas/nuevaEncomienda/">Registrar encomienda</a></li>
+                            <li><a href="/seguimiento/seguimientoEncomienda/">Seguimiento</a></li>
                         </ul>
                     </li>
 
@@ -122,96 +136,57 @@
                             <span>Reportes</span>
                             <i class="bi bi-chevron-down toggle-dropdown"></i>
                         </a>
-
                         <ul>
-                            <li>
-                                <a href="/reportes/listadoReporte/">
-                                    Novedades
-                                </a>
-                            </li>
-
-                            <!-- NUEVA OPCIÓN DE REPORTES GENERALES -->
-                            <li>
-                                <a href="/reportes/reportesGenerales/">
-                                    Reportes generales
-                                </a>
-                            </li>
-
-                            <li>
-                                <a href="/notificaciones/listadoNotificacion/">
-                                    Correos enviados
-                                </a>
-                            </li>
+                            <li><a href="/reportes/listadoReporte/">Novedades</a></li>
+                            <li><a href="/reportes/reportesGenerales/">Reportes generales</a></li>
+                            <li><a href="/notificaciones/listadoNotificacion/">Correos enviados</a></li>
                         </ul>
                     </li>
+                    {% else %}
+                    <!-- MENÚ PARA CLIENTES / USUARIOS NORMALES (Solo Seguimiento) -->
+                    <li>
+                        <a href="/seguimiento/seguimientoEncomienda/" class="{% if '/seguimiento/' in request.path %}active{% endif %}">Seguimiento</a>
+                    </li>
+                    {% endif %}
 
                 </ul>
 
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
+            <!-- BLOQUE DE USUARIO Y BOTÓN CERRAR SESIÓN -->
+            {% if request.user.is_authenticated %}
+            <div class="user-session-box d-none d-xl-flex">
+                <span class="user-greeting">
+                    <i class="bi bi-person-circle text-primary"></i> {{ request.user.username }}
+                </span>
+                <a href="/logout/" class="btn-logout">
+                    <i class="bi bi-box-arrow-right"></i> Salir
+                </a>
+            </div>
+            {% endif %}
+
         </div>
     </header>
-{% block contenido %}
-{% endblock %}
+
+    {% block contenido %}
+    {% endblock %}
+
     <footer id="footer" class="footer dark-background">
-
         <div class="container footer-top">
-        <div class="row gy-4">
-            <div class="col-lg-5 col-md-12 footer-about">
-            <a href="index.html" class="logo d-flex align-items-center">
-                <span class="sitename">Logis</span>
-            </a>
-            <p>Cras fermentum odio eu feugiat lide par naso tierra. Justo eget nada terra videa magna derita valies darta donna mare fermentum iaculis eu non diam phasellus.</p>
-            <div class="social-links d-flex mt-4">
-                <a href=""><i class="bi bi-twitter-x"></i></a>
-                <a href=""><i class="bi bi-facebook"></i></a>
-                <a href=""><i class="bi bi-instagram"></i></a>
-                <a href=""><i class="bi bi-linkedin"></i></a>
+            <div class="row gy-4">
+                <div class="col-lg-5 col-md-12 footer-about">
+                    <a href="index.html" class="logo d-flex align-items-center">
+                        <span class="sitename">Punto a Punto</span>
+                    </a>
+                    <p>Sistema de gestión y seguimiento de encomiendas eficiente y seguro.</p>
+                </div>
             </div>
-            </div>
-
-            <div class="col-lg-2 col-6 footer-links">
-            <h4>Useful Links</h4>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">About us</a></li>
-                <li><a href="#">Services</a></li>
-                <li><a href="#">Terms of service</a></li>
-                <li><a href="#">Privacy policy</a></li>
-            </ul>
-            </div>
-
-            <div class="col-lg-2 col-6 footer-links">
-            <h4>Our Services</h4>
-            <ul>
-                <li><a href="#">Web Design</a></li>
-                <li><a href="#">Web Development</a></li>
-                <li><a href="#">Product Management</a></li>
-                <li><a href="#">Marketing</a></li>
-                <li><a href="#">Graphic Design</a></li>
-            </ul>
-            </div>
-
-            <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
-            <h4>Contact Us</h4>
-            <p>A108 Adam Street</p>
-            <p>New York, NY 535022</p>
-            <p>United States</p>
-            <p class="mt-4"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-            <p><strong>Email:</strong> <span>info@example.com</span></p>
-            </div>
-
-        </div>
         </div>
 
         <div class="container copyright text-center mt-4">
-        <p>© <span>Copyright</span> <strong class="px-1 sitename">Logis</strong> <span>All Rights Reserved</span></p>
-        <div class="credits">
-            Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a> Distributed by <a href="https://themewagon.com">ThemeWagon</a>
+            <p>© <span>Copyright</span> <strong class="px-1 sitename">Punto a Punto</strong> <span>All Rights Reserved</span></p>
         </div>
-        </div>
-
     </footer>
 
     <!-- Scroll Top -->
@@ -231,6 +206,6 @@
     <!-- Main JS File -->
     <script src="{% static 'assets/js/main.js' %}"></script>
 
-    </body>
+</body>
 
 </html>

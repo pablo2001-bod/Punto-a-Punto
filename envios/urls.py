@@ -2,6 +2,12 @@ from django.urls import path
 from envios import views
 
 urlpatterns = [
+    # Autenticación y Registro
+    path('login/', views.login_view, name='login'),
+    path('registro/', views.registro_view, name='registro'),
+    path('logout/', views.logout_view, name='logout'),
+
+    # Inicio
     path('', views.inicio, name='inicio'),
     
     # Clientes
@@ -26,7 +32,7 @@ urlpatterns = [
     path('transportes/guardarTransporte/', views.guardarTransporte, name='guardarTransporte'),
     path('transportes/editarTransporte/<int:id>/', views.editarTransporte, name='editarTransporte'),
     path('transportes/actualizarTransporte/<int:id>/', views.actualizarTransporte, name='actualizarTransporte'),
-    path('transportes/eliminarTransporte/<int:id>/', views.eliminarTransporte, name='eliminarTransporte'), # <-- Asegúrate de tener esta vista si usas el botón eliminar
+    path('transportes/eliminarTransporte/<int:id>/', views.eliminarTransporte, name='eliminarTransporte'),
 
     # Seguros
     path('seguros/listadoSeguro/', views.listadoSeguro, name='listadoSeguro'),
@@ -54,8 +60,6 @@ urlpatterns = [
     path('reportes/actualizarReporte/<int:id>/', views.actualizarReporte, name='actualizarReporte'),
     path('reportes/eliminarReporte/<int:id>/', views.eliminarReporte, name='eliminarReporte'),
     path('reportes/resolverReporte/<int:id>/', views.resolverReporte, name='resolverReporte'),
-    
-    # NUEVO: Reportes Generales
     path('reportes/reportesGenerales/', views.reportesGenerales, name='reportesGenerales'),
 
     # Notificaciones

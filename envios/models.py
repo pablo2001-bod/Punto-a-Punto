@@ -1,19 +1,21 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 
 
 class Cliente(models.Model):
     id_cliente = models.AutoField(primary_key=True)
-    cedula = models.CharField(max_length=10, unique=True)
+    # NUEVO: Vinculamos el cliente con el usuario de Django
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
+    
     nombres = models.CharField(max_length=100)
     apellidos = models.CharField(max_length=100)
+    cedula = models.CharField(max_length=20, unique=True)
+    telefono = models.CharField(max_length=20)
     email = models.EmailField()
-    telefono = models.CharField(max_length=15)
-    direccion = models.CharField(max_length=200)
-
+    direccion = models.TextField()
+    
     def __str__(self):
         return f"{self.nombres} {self.apellidos}"
-
 
 class Oficina(models.Model):
     id_oficina = models.AutoField(primary_key=True)
@@ -28,7 +30,6 @@ class Oficina(models.Model):
 
 
 class Transporte(models.Model):
-
     TIPOS_TRANSPORTE = [
         ("MOTO", "Motocicleta"),
         ("CAMIONETA", "Camioneta"),
@@ -47,7 +48,7 @@ class Transporte(models.Model):
     marca = models.CharField(max_length=100)
     modelo = models.CharField(max_length=100)
     capacidad_kg = models.DecimalField(max_digits=10, decimal_places=2)
-    estado = models.CharField(max_length=20, choices=ESTADOS_TRANSPORTE,default="DISPONIBLE")
+    estado = models.CharField(max_length=20, choices=ESTADOS_TRANSPORTE, default="DISPONIBLE")
 
     def __str__(self):
         return f"{self.placa} - {self.tipo}"
@@ -66,7 +67,6 @@ class Seguro(models.Model):
 
 
 class Encomienda(models.Model):
-
     ESTADOS_ENCOMIENDA = [
         ("REGISTRADA", "Registrada"),
         ("OFICINA_ORIGEN", "En oficina de origen"),
@@ -77,7 +77,6 @@ class Encomienda(models.Model):
     ]
 
     id_encomienda = models.AutoField(primary_key=True)
-
     codigo_seguimiento = models.CharField(max_length=30, unique=True)
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="encomiendas")
@@ -101,28 +100,26 @@ class Encomienda(models.Model):
     fecha_entrega = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.codigo_seguimiento} - {self.nombre_destinatario}"
+        return f"{self.codigo_seguimiento} - {self.cliente}"
 
 
 class Reporte(models.Model):
-
     TIPOS_REPORTE = [
-        ("NOVEDAD", "Novedad"),
         ("RETRASO", "Retraso"),
         ("DANIO", "Daño"),
         ("PERDIDA", "Pérdida"),
-        ("ENTREGA", "Entrega"),
+        ("OTRO", "Otro"),
     ]
 
     id_reporte = models.AutoField(primary_key=True)
     encomienda = models.ForeignKey(Encomienda, on_delete=models.CASCADE, related_name="reportes")
     tipo = models.CharField(max_length=20, choices=TIPOS_REPORTE)
     detalle = models.TextField()
-    fecha_reporte = models.DateTimeField(auto_now_add=True)
     resuelto = models.BooleanField(default=False)
+    fecha_reporte = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.tipo} - {self.encomienda.codigo_seguimiento}"
+        return f"Reporte {self.tipo} - {self.encomienda.codigo_seguimiento}"
 
 
 class NotificacionCorreo(models.Model):
@@ -131,8 +128,8 @@ class NotificacionCorreo(models.Model):
     destinatario = models.EmailField()
     asunto = models.CharField(max_length=200)
     mensaje = models.TextField()
-    fecha_envio = models.DateTimeField(auto_now_add=True)
     enviado = models.BooleanField(default=False)
+    fecha_envio = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.destinatario} - {self.encomienda.codigo_seguimiento}"
+        return f"Correo a {self.destinatario} - {self.asunto}"

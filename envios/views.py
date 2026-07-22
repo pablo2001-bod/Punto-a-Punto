@@ -2,58 +2,143 @@ from django.shortcuts import render, redirect, get_object_or_404
 from envios.models import Cliente, Oficina, Transporte, Seguro, Encomienda, Reporte, NotificacionCorreo
 from django.contrib import messages
 import uuid
-from django.conf import settings
-from django.core.mail import send_mail
 from django.utils import timezone
 from envios.forms import ClienteForm, OficinaForm
 from django.db.models import Sum
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+def es_administrador(user):
+    return user.is_authenticated and user.is_superuser
 
 # ==========================================
-# FUNCIÓN AUXILIAR: Enviar Notificacion
+# MÓDULO: AUTENTICACIÓN Y REGISTRO
 # ==========================================
-def enviar_notificacion(encomienda, asunto, mensaje):
-    correos = {
-        encomienda.cliente.email,
-        encomienda.email_destinatario,
-    }
+@login_required(login_url="/login/")
+def inicio(request):
+    return render(request, 'inicio.html')
 
-    for correo in correos:
-        if not correo:
-            continue
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Has cerrado sesión correctamente.")
+    return redirect("login")
 
-        cantidad_enviada = send_mail(
-            asunto,
-            mensaje,
-            getattr(settings, "DEFAULT_FROM_EMAIL", "no-reply@puntoapunto.com"),
-            [correo],
-            fail_silently=True,
-        )
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Bienvenido, {user.username}")
+            return redirect("inicio")
+        else:
+            messages.error(request, "Usuario o contraseña incorrectos.")
+    return render(request, "auth/login.html")
 
-        NotificacionCorreo.objects.create(
-            encomienda=encomienda,
-            destinatario=correo,
-            asunto=asunto,
-            mensaje=mensaje,
-            enviado=cantidad_enviada > 0,
-        )
+def registro_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+        
+        # Nuevos datos del cliente
+        nombres = request.POST.get("nombres")
+        apellidos = request.POST.get("apellidos")
+        cedula = request.POST.get("cedula")
+        telefono = request.POST.get("telefono")
+        direccion = request.POST.get("direccion")
+
+        if password1 != password2:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return render(request, "auth/registro.html")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "El nombre de usuario ya está en uso.")
+            return render(request, "auth/registro.html")
+
+        if Cliente.objects.filter(cedula=cedula).exists():
+            messages.error(request, "Ya existe un cliente registrado con esa cédula.")
+            return render(request, "auth/registro.html")
+
+        try:
+            # 1. Crear el usuario de Django
+            user = User.objects.create_user(username=username, email=email, password=password1)
+            user.save()
+
+            # 2. Crear el registro en Cliente vinculado al usuario y visible para el admin
+            Cliente.objects.create(
+                user=user,
+                nombres=nombres,
+                apellidos=apellidos,
+                cedula=cedula,
+                telefono=telefono,
+                email=email,
+                direccion=direccion
+            )
+
+            messages.success(request, "Cuenta creada exitosamente. Inicia sesión.")
+            return redirect("login")
+        except Exception as e:
+            messages.error(request, f"Error al registrar: {e}")
+            
+    return render(request, "auth/registro.html")
 
 # ==========================================
 # INICIO
 # ==========================================
-def inicio(request):
-    return render(request, 'inicio.html')
+@login_required(login_url="/login/")
+def seguimientoEncomienda(request):
+    encomiendas = []
+    busqueda_realizada = False
+
+    # Si es un usuario normal (cliente), podemos mostrarle directamente sus encomiendas
+    if not request.user.is_superuser:
+        try:
+            cliente_actual = Cliente.objects.get(user=request.user)
+            # Buscar encomiendas donde el cliente sea el usuario logueado 
+            # (ya sea por su ID de cliente o por su correo/cédula)
+            encomiendas = Encomienda.objects.filter(cliente=cliente_actual).select_related("oficina_origen", "oficina_destino")
+            busqueda_realizada = True
+        except Cliente.DoesNotExist:
+            encomiendas = []
+    else:
+        # Si es el administrador, puede buscar por código como lo tenías antes
+        if request.method == "POST":
+            busqueda_realizada = True
+            codigo = request.POST.get("codigo", "").strip()
+            encomienda_encontrada = Encomienda.objects.select_related(
+                "oficina_origen", "oficina_destino"
+            ).filter(codigo_seguimiento__iexact=codigo).first()
+            
+            if encomienda_encontrada:
+                encomiendas = [encomienda_encontrada]
+
+    return render(
+        request,
+        "seguimiento/seguimientoEncomienda.html",
+        {
+            "encomiendas": encomiendas,
+            "busqueda_realizada": busqueda_realizada,
+        },
+    )
 
 # ==========================================
-# MÓDULO: Clientes
+# MÓDULO: Clientes (Solo Admin)
 # ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def listadoCliente(request):
     clientes = Cliente.objects.all().order_by("-id_cliente")
     return render(request, "clientes/listadoCliente.html", {"clientes": clientes})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def nuevoCliente(request):
     form = ClienteForm()
     return render(request, "clientes/nuevoCliente.html", {"form": form})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def guardarCliente(request):
     if request.method == "POST":
         form = ClienteForm(request.POST)
@@ -62,18 +147,17 @@ def guardarCliente(request):
             messages.success(request, "Cliente registrado correctamente.")
             return redirect("/clientes/listadoCliente/")
         else:
-            # IMPRIME LOS ERRORES EN LA CONSOLA DE DJANGO PARA VER QUÉ FALLA
-            print("ERRORES DEL FORMULARIO DE CLIENTE:", form.errors)
             messages.error(request, f"Error al guardar: {form.errors}")
             return render(request, "clientes/nuevoCliente.html", {"form": form})
     return redirect("/clientes/listadoCliente/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def editarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)
     form = ClienteForm(instance=cliente)
     return render(request, "clientes/editarCliente.html", {"form": form, "cliente": cliente})
 
-
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def actualizarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)
     if request.method == "POST":
@@ -81,11 +165,12 @@ def actualizarCliente(request, id):
         if form.is_valid():
             form.save()
             messages.success(request, "Cliente actualizado correctamente.")
-            return redirect("listadoCliente") # <-- Usa el name de la URL
+            return redirect("listadoCliente")
         else:
             return render(request, "clientes/editarCliente.html", {"form": form, "cliente": cliente})
     return redirect("listadoCliente")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def eliminarCliente(request, id):
     cliente = get_object_or_404(Cliente, id_cliente=id)
     cliente.delete()
@@ -93,16 +178,19 @@ def eliminarCliente(request, id):
     return redirect("/clientes/listadoCliente")
 
 # ==========================================
-# MÓDULO: Oficinas
+# MÓDULO: Oficinas (Solo Admin)
 # ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def listadoOficina(request):
     oficinas = Oficina.objects.all().order_by("-id_oficina")
     return render(request, "oficinas/listadoOficina.html", {"oficinas": oficinas})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def nuevaOficina(request):
     form = OficinaForm()
     return render(request, "oficinas/nuevaOficina.html", {"form": form})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def guardarOficina(request):
     if request.method == "POST":
         form = OficinaForm(request.POST)
@@ -114,10 +202,12 @@ def guardarOficina(request):
             return render(request, "oficinas/nuevaOficina.html", {"form": form})
     return redirect("/oficinas/listadoOficina")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def editarOficina(request, id):
     oficina = get_object_or_404(Oficina, id_oficina=id)
     return render(request, "oficinas/editarOficina.html", {"oficina": oficina})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def actualizarOficina(request, id):
     oficina = get_object_or_404(Oficina, id_oficina=id)
     if request.method == "POST":
@@ -131,6 +221,7 @@ def actualizarOficina(request, id):
         return redirect("/oficinas/listadoOficina/")
     return redirect("/oficinas/listadoOficina/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def eliminarOficina(request, id):
     oficina = get_object_or_404(Oficina, id_oficina=id)
     oficina.delete()
@@ -138,16 +229,14 @@ def eliminarOficina(request, id):
     return redirect("/oficinas/listadoOficina/")
 
 # ==========================================
-# MÓDULO: TRANSPORTES
+# MÓDULO: TRANSPORTES (Solo Admin)
 # ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def listadoTransporte(request):
     transportes = Transporte.objects.all().order_by("-id_transporte")
-    return render(
-        request,
-        "transportes/listadoTransporte.html",
-        {"transportes": transportes},
-    )
+    return render(request, "transportes/listadoTransporte.html", {"transportes": transportes})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def nuevoTransporte(request):
     return render(
         request,
@@ -157,13 +246,11 @@ def nuevoTransporte(request):
             "estados_transporte": Transporte.ESTADOS_TRANSPORTE,
         },
     )
-#GUARDAR
+
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def guardarTransporte(request):
     if request.method == "POST":
-        # Se agregan validaciones básicas antes de crear
         placa = request.POST.get("placa", "").strip().upper()
-        
-        # Validación de placa única
         if Transporte.objects.filter(placa=placa).exists():
             messages.error(request, f"La placa {placa} ya está registrada.")
             return redirect("/transportes/nuevoTransporte/")
@@ -183,7 +270,8 @@ def guardarTransporte(request):
             return redirect("/transportes/nuevoTransporte/")
             
     return redirect("/transportes/listadoTransporte/")
-#EDITAR
+
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def editarTransporte(request, id):
     transporte = get_object_or_404(Transporte, id_transporte=id)
     return render(
@@ -196,12 +284,11 @@ def editarTransporte(request, id):
         },
     )
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def actualizarTransporte(request, id):
     transporte = get_object_or_404(Transporte, id_transporte=id)
     if request.method == "POST":
         placa = request.POST.get("placa", "").strip().upper()
-
-        # Validación de placa única (excluyendo el transporte actual)
         if Transporte.objects.filter(placa=placa).exclude(id_transporte=id).exists():
             messages.error(request, f"La placa {placa} ya está registrada en otro vehículo.")
             return redirect(f"/transportes/editarTransporte/{id}/")
@@ -222,34 +309,31 @@ def actualizarTransporte(request, id):
         return redirect("/transportes/listadoTransporte/")
     return redirect("/transportes/listadoTransporte/")
 
-#ELIMINAR
-
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def eliminarTransporte(request, id):
     transporte = get_object_or_404(Transporte, id_transporte=id)
     placa = transporte.placa
-    
     try:
-        
         transporte.encomiendas.update(transporte=None)
-        
-        # Ahora sí lo eliminamos físicamente de la base de datos
         transporte.delete()
         messages.success(request, f"Transporte con placa {placa} eliminado correctamente.")
     except Exception as e:
         messages.error(request, f"No se pudo eliminar el transporte: {e}")
-        
     return redirect("/transportes/listadoTransporte/")
 
 # ==========================================
-# MÓDULO: Seguros
+# MÓDULO: Seguros (Solo Admin)
 # ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def listadoSeguro(request):
     seguros = Seguro.objects.all().order_by("-id_seguro")
     return render(request, "seguros/listadoSeguro.html", {"seguros": seguros})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def nuevoSeguro(request):
     return render(request, "seguros/nuevoSeguro.html")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def guardarSeguro(request):
     if request.method == "POST":
         try:
@@ -263,30 +347,19 @@ def guardarSeguro(request):
             messages.success(request, "Seguro registrado correctamente.")
         except Exception as e:
             messages.error(request, f"Error al registrar seguro: {e}")
-            
     return redirect("/seguros/listadoSeguro/")
 
 # ==========================================
-# MÓDULO: Encomiendas
+# MÓDULO: Encomiendas (Solo Admin)
 # ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def listadoEncomienda(request):
-    encomiendas = (
-        Encomienda.objects.select_related(
-            "cliente",
-            "oficina_origen",
-            "oficina_destino",
-            "transporte",
-            "seguro",
-        )
-        .all()
-        .order_by("-id_encomienda")
-    )
-    return render(
-        request,
-        "encomiendas/listadoEncomienda.html",
-        {"encomiendas": encomiendas},
-    )
+    encomiendas = Encomienda.objects.select_related(
+        "cliente", "oficina_origen", "oficina_destino", "transporte", "seguro"
+    ).all().order_by("-id_encomienda")
+    return render(request, "encomiendas/listadoEncomienda.html", {"encomiendas": encomiendas})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def nuevaEncomienda(request):
     datos = {
         "clientes": Cliente.objects.all().order_by("apellidos", "nombres"),
@@ -296,26 +369,15 @@ def nuevaEncomienda(request):
     }
     return render(request, "encomiendas/nuevaEncomienda.html", datos)
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def guardarEncomienda(request):
     if request.method == "POST":
         try:
             cliente = Cliente.objects.get(id_cliente=request.POST["cliente"])
-            oficina_origen = Oficina.objects.get(
-                id_oficina=request.POST["oficina_origen"]
-            )
-            oficina_destino = Oficina.objects.get(
-                id_oficina=request.POST["oficina_destino"]
-            )
-
-            transporte = None
-            if request.POST.get("transporte"):
-                transporte = Transporte.objects.get(
-                    id_transporte=request.POST["transporte"]
-                )
-
-            seguro = None
-            if request.POST.get("seguro"):
-                seguro = Seguro.objects.get(id_seguro=request.POST["seguro"])
+            oficina_origen = Oficina.objects.get(id_oficina=request.POST["oficina_origen"])
+            oficina_destino = Oficina.objects.get(id_oficina=request.POST["oficina_destino"])
+            transporte = Transporte.objects.get(id_transporte=request.POST["transporte"]) if request.POST.get("transporte") else None
+            seguro = Seguro.objects.get(id_seguro=request.POST["seguro"]) if request.POST.get("seguro") else None
 
             encomienda = Encomienda.objects.create(
                 codigo_seguimiento=f"ENC-{uuid.uuid4().hex[:8].upper()}",
@@ -334,30 +396,14 @@ def guardarEncomienda(request):
                 valor_declarado=request.POST.get("valor_declarado", 0),
                 costo_envio=request.POST.get("costo_envio", 0),
             )
-
-            # Notificación por correo
-            asunto = f"Encomienda registrada: {encomienda.codigo_seguimiento}"
-            mensaje_correo = (
-                f"Su encomienda fue registrada correctamente.\n\n"
-                f"Código de seguimiento: {encomienda.codigo_seguimiento}\n"
-                f"Origen: {encomienda.oficina_origen}\n"
-                f"Destino: {encomienda.oficina_destino}\n"
-                f"Estado: {encomienda.get_estado_display()}\n"
-            )
-            enviar_notificacion(encomienda, asunto, mensaje_correo)
-            
-            messages.success(
-                request,
-                f"Encomienda registrada. Código: {encomienda.codigo_seguimiento}",
-            )
+            messages.success(request, f"Encomienda registrada. Código: {encomienda.codigo_seguimiento}")
             return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
-            
         except Exception as e:
             messages.error(request, f"Error al registrar encomienda: {e}")
             return redirect("/encomiendas/nuevaEncomienda/")
-            
     return redirect("/encomiendas/listadoEncomienda/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def editarEncomienda(request, id):
     encomienda = get_object_or_404(Encomienda, id_encomienda=id)
     datos = {
@@ -369,6 +415,7 @@ def editarEncomienda(request, id):
     }
     return render(request, "encomiendas/editarEncomienda.html", datos)
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def actualizarEncomienda(request, id):
     encomienda = get_object_or_404(Encomienda, id_encomienda=id)
     if request.method == "POST":
@@ -376,17 +423,8 @@ def actualizarEncomienda(request, id):
             encomienda.cliente = Cliente.objects.get(id_cliente=request.POST["cliente"])
             encomienda.oficina_origen = Oficina.objects.get(id_oficina=request.POST["oficina_origen"])
             encomienda.oficina_destino = Oficina.objects.get(id_oficina=request.POST["oficina_destino"])
-
-            transporte = None
-            if request.POST.get("transporte"):
-                transporte = Transporte.objects.get(id_transporte=request.POST["transporte"])
-            encomienda.transporte = transporte
-
-            seguro = None
-            if request.POST.get("seguro"):
-                seguro = Seguro.objects.get(id_seguro=request.POST["seguro"])
-            encomienda.seguro = seguro
-
+            encomienda.transporte = Transporte.objects.get(id_transporte=request.POST["transporte"]) if request.POST.get("transporte") else None
+            encomienda.seguro = Seguro.objects.get(id_seguro=request.POST["seguro"]) if request.POST.get("seguro") else None
             encomienda.nombre_destinatario = request.POST["nombre_destinatario"]
             encomienda.cedula_destinatario = request.POST["cedula_destinatario"]
             encomienda.email_destinatario = request.POST["email_destinatario"]
@@ -397,74 +435,45 @@ def actualizarEncomienda(request, id):
             encomienda.valor_declarado = request.POST.get("valor_declarado", 0)
             encomienda.costo_envio = request.POST.get("costo_envio", 0)
             encomienda.save()
-            
             messages.success(request, "Encomienda actualizada correctamente.")
             return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
         except Exception as e:
             messages.error(request, f"Error al actualizar encomienda: {e}")
             return redirect(f"/encomiendas/editarEncomienda/{id}/")
-            
     return redirect("/encomiendas/listadoEncomienda/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def eliminarEncomienda(request, id):
     encomienda = get_object_or_404(Encomienda, id_encomienda=id)
-    codigo = encomienda.codigo_seguimiento
     encomienda.delete()
-    messages.success(request, f"Encomienda {codigo} eliminada correctamente.")
+    messages.success(request, "Encomienda eliminada correctamente.")
     return redirect("/encomiendas/listadoEncomienda/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def detalleEncomienda(request, id):
-    encomienda = Encomienda.objects.select_related(
-        "cliente",
-        "oficina_origen",
-        "oficina_destino",
-        "transporte",
-        "seguro",
-    ).get(id_encomienda=id)
+    encomienda = get_object_or_404(Encomienda, id_encomienda=id)
     reportes = encomienda.reportes.all().order_by("-fecha_reporte")
-    return render(
-        request,
-        "encomiendas/detalleEncomienda.html",
-        {
-            "encomienda": encomienda,
-            "reportes": reportes,
-        },
-    )
+    return render(request, "encomiendas/detalleEncomienda.html", {"encomienda": encomienda, "reportes": reportes})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def actualizarEstadoEncomienda(request, id):
-    encomienda = Encomienda.objects.get(id_encomienda=id)
+    encomienda = get_object_or_404(Encomienda, id_encomienda=id)
     if request.method == "POST":
         try:
             encomienda.estado = request.POST["estado"]
             if encomienda.estado == "ENTREGADA":
                 encomienda.fecha_entrega = timezone.now()
             encomienda.save()
-            
-            asunto = f"Actualización de encomienda {encomienda.codigo_seguimiento}"
-            mensaje_correo = (
-                f"El estado de su encomienda cambió.\n\n"
-                f"Código: {encomienda.codigo_seguimiento}\n"
-                f"Nuevo estado: {encomienda.get_estado_display()}\n"
-            )
-            enviar_notificacion(encomienda, asunto, mensaje_correo)
             messages.success(request, "Estado actualizado correctamente.")
         except Exception as e:
             messages.error(request, f"Error al actualizar estado: {e}")
-            
         return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
-        
-    return render(
-        request,
-        "encomiendas/actualizarEstadoEncomienda.html",
-        {
-            "encomienda": encomienda,
-            "estados_encomienda": Encomienda.ESTADOS_ENCOMIENDA,
-        },
-    )
+    return render(request, "encomiendas/actualizarEstadoEncomienda.html", {"encomienda": encomienda, "estados_encomienda": Encomienda.ESTADOS_ENCOMIENDA})
 
 # ==========================================
-# MÓDULO: SEGUIMIENTO
+# MÓDULO: SEGUIMIENTO (ACCESIBLE PARA CLIENTES Y ADMIN)
 # ==========================================
+@login_required(login_url="/login/")
 def seguimientoEncomienda(request):
     encomienda = None
     busqueda_realizada = False
@@ -472,10 +481,8 @@ def seguimientoEncomienda(request):
     if request.method == "POST":
         busqueda_realizada = True
         codigo = request.POST.get("codigo", "").strip()
-
         encomienda = Encomienda.objects.select_related(
-            "oficina_origen",
-            "oficina_destino",
+            "oficina_origen", "oficina_destino"
         ).filter(codigo_seguimiento__iexact=codigo).first()
 
     return render(
@@ -488,141 +495,83 @@ def seguimientoEncomienda(request):
     )
 
 # ==========================================
-# MÓDULO: REPORTES
+# MÓDULO: REPORTES Y NOVEDADES (Solo Admin)
 # ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def listadoReporte(request):
-    reportes = Reporte.objects.select_related("encomienda").all().order_by(
-        "-fecha_reporte"
-    )
+    reportes = Reporte.objects.select_related("encomienda").all().order_by("-fecha_reporte")
     return render(request, "reportes/listadoReporte.html", {"reportes": reportes})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def nuevoReporte(request, id):
-    encomienda = Encomienda.objects.get(id_encomienda=id)
-    return render(
-        request,
-        "reportes/nuevoReporte.html",
-        {
-            "encomienda": encomienda,
-            "tipos_reporte": Reporte.TIPOS_REPORTE,
-        },
-    )
+    encomienda = get_object_or_404(Encomienda, id_encomienda=id)
+    return render(request, "reportes/nuevoReporte.html", {"encomienda": encomienda, "tipos_reporte": Reporte.TIPOS_REPORTE})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def guardarReporte(request):
     if request.method == "POST":
         try:
-            encomienda = Encomienda.objects.get(
-                id_encomienda=request.POST["encomienda"]
-            )
-
-            reporte = Reporte.objects.create(
+            encomienda = Encomienda.objects.get(id_encomienda=request.POST["encomienda_id"])
+            Reporte.objects.create(
                 encomienda=encomienda,
                 tipo=request.POST["tipo"],
-                detalle=request.POST["detalle"],
-                resuelto="resuelto" in request.POST,
+                detalle=request.POST["detalle"]
             )
-
-            asunto = f"Novedad de encomienda {encomienda.codigo_seguimiento}"
-            mensaje_correo = (
-                f"Se registró una novedad en su encomienda.\n\n"
-                f"Tipo: {reporte.get_tipo_display()}\n"
-                f"Detalle: {reporte.detalle}\n"
-            )
-            enviar_notificacion(encomienda, asunto, mensaje_correo)
-
             messages.success(request, "Reporte registrado correctamente.")
             return redirect(f"/encomiendas/detalleEncomienda/{encomienda.id_encomienda}/")
         except Exception as e:
             messages.error(request, f"Error al guardar reporte: {e}")
-            
-    return redirect("reportes/listadoReporte")
+    return redirect("/reportes/listadoReporte/")
+
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def editarReporte(request, id):
     reporte = get_object_or_404(Reporte, id_reporte=id)
-    return render(
-        request,
-        "reportes/editarReporte.html",
-        {
-            "reporte": reporte,
-            "tipos_reporte": Reporte.TIPOS_REPORTE,
-        }
-    )
+    return render(request, "reportes/editarReporte.html", {"reporte": reporte, "tipos_reporte": Reporte.TIPOS_REPORTE})
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def actualizarReporte(request, id):
     reporte = get_object_or_404(Reporte, id_reporte=id)
     if request.method == "POST":
-        reporte.tipo = request.POST["tipo"]
-        reporte.detalle = request.POST["detalle"]
-        reporte.resuelto = "resuelto" in request.POST
-        reporte.save()
-        messages.success(request, "Reporte actualizado correctamente.")
-        return redirect("/reportes/listadoReporte/")
+        try:
+            reporte.tipo = request.POST["tipo"]
+            reporte.detalle = request.POST["detalle"]
+            reporte.save()
+            messages.success(request, "Reporte actualizado correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al actualizar reporte: {e}")
     return redirect("/reportes/listadoReporte/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def eliminarReporte(request, id):
     reporte = get_object_or_404(Reporte, id_reporte=id)
+    encomienda_id = reporte.encomienda.id_encomienda
     reporte.delete()
     messages.success(request, "Reporte eliminado correctamente.")
-    return redirect("/reportes/listadoReporte/")
+    return redirect(f"/encomiendas/detalleEncomienda/{encomienda_id}/")
 
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def resolverReporte(request, id):
     reporte = get_object_or_404(Reporte, id_reporte=id)
     reporte.resuelto = True
     reporte.save()
-    messages.success(request, "El reporte ha sido marcado como resuelto.")
+    messages.success(request, "Reporte marcado como resuelto.")
     return redirect("/reportes/listadoReporte/")
 
-# ==========================================
-# MÓDULO: Notificaciones
-# ==========================================
-def listadoNotificacion(request):
-    notificaciones = (
-        NotificacionCorreo.objects.select_related("encomienda")
-        .all()
-        .order_by("-fecha_envio")
-    )
-    return render(
-        request,
-        "notificaciones/listadoNotificacion.html",
-        {"notificaciones": notificaciones},
-    )
-
-# REPORTES GENERALES (Filtros y Dashboard)
+@user_passes_test(es_administrador, login_url="/seguimiento/")
 def reportesGenerales(request):
-    # Obtenemos todas las encomiendas base
-    encomiendas = Encomienda.objects.select_related(
-        'cliente', 'oficina_origen', 'oficina_destino'
-    ).all().order_by('-fecha_registro')
-
-    # Capturar parámetros de filtro desde el formulario GET
-    fecha_inicio = request.GET.get('fecha_inicio')
-    fecha_fin = request.GET.get('fecha_fin')
-    estado = request.GET.get('estado')
-    oficina = request.GET.get('oficina')
-
-    # Aplicar filtros si existen
-    if fecha_inicio:
-        encomiendas = encomiendas.filter(fecha_registro__date__gte=fecha_inicio)
-    if fecha_fin:
-        encomiendas = encomiendas.filter(fecha_registro__date__lte=fecha_fin)
-    if estado:
-        encomiendas = encomiendas.filter(estado=estado)
-    if oficina:
-        # Filtra si la oficina seleccionada es origen o destino
-        encomiendas = encomiendas.filter(oficina_origen__id_oficina=oficina) | encomiendas.filter(oficina_destino__id_oficina=oficina)
-
-    # Cálculos para el Dashboard (KPIs)
+    encomiendas = Encomienda.objects.select_related('cliente', 'oficina_origen', 'oficina_destino').all().order_by('-fecha_registro')
     total_encomiendas = encomiendas.count()
-    # Sumar el costo de envío de las encomiendas filtradas (si es None, devuelve 0)
     total_ingresos = encomiendas.aggregate(total=Sum('costo_envio'))['total'] or 0
+    return render(request, "reportes/reportesGenerales.html", {
+        "encomiendas": encomiendas,
+        "total_encomiendas": total_encomiendas,
+        "total_ingresos": total_ingresos,
+    })
 
-    return render(
-        request, 
-        "reportes/reportesGenerales.html", 
-        {
-            "encomiendas": encomiendas,
-            "estados_encomienda": Encomienda.ESTADOS_ENCOMIENDA,
-            "oficinas": Oficina.objects.all(),
-            "total_encomiendas": total_encomiendas,
-            "total_ingresos": total_ingresos,
-            "filtros": request.GET, # Para mantener los valores seleccionados en el select/input
-        }
-    )
+# ==========================================
+# MÓDULO: Notificaciones (Solo Admin)
+# ==========================================
+@user_passes_test(es_administrador, login_url="/seguimiento/")
+def listadoNotificacion(request):
+    notificaciones = NotificacionCorreo.objects.select_related("encomienda").all().order_by("-fecha_envio")
+    return render(request, "notificaciones/listadoNotificacion.html", {"notificaciones": notificaciones})
