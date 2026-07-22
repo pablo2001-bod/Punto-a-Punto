@@ -1,4 +1,6 @@
 {% extends "plantillaprincipal.html" %}
+{% block titulo %}Seguros | Punto a Punto{% endblock %}
+
 {% block contenido %}
 <main class="main" style="padding-top: 105px;">
 <section class="section">
@@ -25,6 +27,7 @@
                         <th>Cobertura</th>
                         <th>Costo</th>
                         <th>Activo</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,10 +44,23 @@
                                 <span class="badge text-bg-secondary">No</span>
                             {% endif %}
                         </td>
+                        
+                        <!--BOTONES DE EDITAR Y ELIMINAR JUNTOS -->
+                        <td class="text-center">
+                            <!-- Botón Editar (Amarillo) -->
+                            <a href="/seguros/editarSeguro/{{ seguro.id_seguro }}/" class="btn btn-warning btn-sm me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            
+                            <!-- Botón Eliminar (Rojo con confirmación) -->
+                            <button type="button" class="btn btn-danger btn-sm" onclick="confirmarEliminacion(event, '/seguros/eliminarSeguro/{{ seguro.id_seguro }}/')" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             No existen seguros registrados.
                         </td>
                     </tr>

@@ -33,6 +33,10 @@ urlpatterns = [
     path('seguros/listadoSeguro/', views.listadoSeguro, name='listadoSeguro'),
     path('seguros/nuevoSeguro/', views.nuevoSeguro, name='nuevoSeguro'),
     path('seguros/guardarSeguro/', views.guardarSeguro, name='guardarSeguro'),
+    path('seguros/editarSeguro/<int:id>/', views.editarSeguro, name='editarSeguro'),
+    path('seguros/actualizarSeguro/<int:id>/', views.actualizarSeguro, name='actualizarSeguro'),
+    path('seguros/eliminarSeguro/<int:id>/', views.eliminarSeguro, name='eliminarSeguro'),
+    
 
     # Encomiendas
     path('encomiendas/listadoEncomienda/', views.listadoEncomienda, name='listadoEncomienda'),

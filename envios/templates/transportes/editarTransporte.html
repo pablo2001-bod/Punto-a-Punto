@@ -1,4 +1,6 @@
 {% extends "plantillaprincipal.html" %}
+{% block titulo %}Editar Transporte | Punto a Punto{% endblock %}
+
 {% block contenido %}
 <main class="main" style="padding-top: 105px;">
 <section class="section">
@@ -19,17 +21,26 @@
                     {{ transporte.placa }}
                 </p>
 
-                <form method="post" action="/transportes/actualizarTransporte/{{ transporte.id_transporte }}/">
+                <!-- Se agrega id="formEditarTransporte" y novalidate para activar las alertas rojas -->
+                <form id="formEditarTransporte" method="post" action="/transportes/actualizarTransporte/{{ transporte.id_transporte }}/" novalidate>
                     {% csrf_token %}
                     
+                    <!-- Placa -->
                     <div class="mb-3">
-                        <label class="form-label">Placa</label>
-                        <input type="text" name="placa" class="form-control" value="{{ transporte.placa }}" required maxlength="10">
+                        <label class="form-label font-weight-bold">Placa <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               id="placa" 
+                               name="placa" 
+                               class="form-control text-uppercase" 
+                               value="{{ transporte.placa }}" 
+                               maxlength="8">
                     </div>
 
+                    <!-- Tipo de Transporte -->
                     <div class="mb-3">
-                        <label class="form-label">Tipo de Transporte</label>
-                        <select name="tipo" class="form-select" required>
+                        <label class="form-label font-weight-bold">Tipo de Transporte <span class="text-danger">*</span></label>
+                        <select name="tipo" class="form-select">
+                            <option value="">Seleccione...</option>
                             {% for valor, texto in tipos_transporte %}
                             <option value="{{ valor }}" {% if transporte.tipo == valor %}selected{% endif %}>
                                 {{ texto }}
@@ -38,24 +49,40 @@
                         </select>
                     </div>
 
+                    <!-- Marca -->
                     <div class="mb-3">
-                        <label class="form-label">Marca</label>
-                        <input type="text" name="marca" class="form-control" value="{{ transporte.marca }}" required>
+                        <label class="form-label font-weight-bold">Marca <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="marca" 
+                               class="form-control" 
+                               value="{{ transporte.marca }}" 
+                               maxlength="30">
                     </div>
 
+                    <!-- Modelo -->
                     <div class="mb-3">
-                        <label class="form-label">Modelo</label>
-                        <input type="text" name="modelo" class="form-control" value="{{ transporte.modelo }}" required>
+                        <label class="form-label font-weight-bold">Modelo <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="modelo" 
+                               class="form-control" 
+                               value="{{ transporte.modelo }}" 
+                               maxlength="30">
                     </div>
 
+                    <!-- Capacidad -->
                     <div class="mb-3">
-                        <label class="form-label">Capacidad (Kg)</label>
-                        <input type="number" step="0.01" name="capacidad_kg" class="form-control" value="{{ transporte.capacidad_kg }}" required>
+                        <label class="form-label font-weight-bold">Capacidad (Kg) <span class="text-danger">*</span></label>
+                        <input type="number" 
+                               step="0.01" 
+                               name="capacidad_kg" 
+                               class="form-control" 
+                               value="{{ transporte.capacidad_kg }}">
                     </div>
 
+                    <!-- Estado -->
                     <div class="mb-3">
-                        <label class="form-label">Estado</label>
-                        <select name="estado" class="form-select" required>
+                        <label class="form-label font-weight-bold">Estado <span class="text-danger">*</span></label>
+                        <select name="estado" class="form-select">
                             {% for valor, texto in estados_transporte %}
                             <option value="{{ valor }}" {% if transporte.estado == valor %}selected{% endif %}>
                                 {{ texto }}
@@ -64,12 +91,15 @@
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-check-circle"></i> Actualizar
-                    </button>
-                    <a href="/transportes/listadoTransporte/" class="btn btn-secondary">
-                        Cancelar
-                    </a>
+                    <!-- Botones -->
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-warning text-dark font-weight-bold">
+                            <i class="bi bi-check-circle"></i> Actualizar
+                        </button>
+                        <a href="/transportes/listadoTransporte/" class="btn btn-secondary">
+                            Cancelar
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>
@@ -79,4 +109,89 @@
 </div>
 </section>
 </main>
+
+<!-- SCRIPT DE VALIDACIÓN EN ROJO PARA EDITAR TRANSPORTE -->
+<script>
+$(document).ready(function() {
+
+    // Transformar placa a mayúsculas al escribir
+    $('#placa').on('input', function() {
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+    });
+
+    // Validaciones personalizadas
+    $.validator.addMethod("formatoPlaca", function(value, element) {
+        return this.optional(element) || /^[A-Z]{3}-\d{3,4}$|^[A-Z]{1,3}\d{3,4}$/.test(value);
+    }, "Ingrese una placa válida (Ej: PBX-1234).");
+
+    $.validator.addMethod("soloTexto", function(value, element) {
+        return this.optional(element) || /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
+    }, "Solo se permiten letras.");
+
+    // Aplicar las reglas
+    $("#formEditarTransporte").validate({
+        rules: {
+            placa: {
+                required: true,
+                minlength: 6,
+                formatoPlaca: true
+            },
+            tipo: {
+                required: true
+            },
+            marca: {
+                required: true,
+                minlength: 2,
+                soloTexto: true
+            },
+            modelo: {
+                required: true,
+                minlength: 1
+            },
+            capacidad_kg: {
+                required: true,
+                number: true,
+                min: 0.1,
+                max: 50000
+            },
+            estado: {
+                required: true
+            }
+        },
+        messages: {
+            placa: {
+                required: "La placa es obligatoria.",
+                minlength: "Mínimo 6 caracteres."
+            },
+            tipo: "Seleccione un tipo de vehículo.",
+            marca: {
+                required: "La marca es obligatoria.",
+                minlength: "Mínimo 2 letras."
+            },
+            modelo: "El modelo es obligatorio.",
+            capacidad_kg: {
+                required: "La capacidad es obligatoria.",
+                number: "Ingrese un número decimal válido.",
+                min: "La capacidad debe ser mayor a 0.",
+                max: "Capacidad máxima 50,000 kg."
+            },
+            estado: "Seleccione un estado."
+        },
+
+        // se pone en rojo el mensaje 
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            error.addClass('invalid-feedback font-weight-bold');
+            element.closest('.mb-3').append(error);
+        },
+        highlight: function (element) {
+            $(element).addClass('is-invalid').removeClass('is-valid');
+        },
+        unhighlight: function (element) {
+            $(element).removeClass('is-invalid').addClass('is-valid');
+        }
+    });
+
+});
+</script>
 {% endblock %}
