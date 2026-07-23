@@ -51,23 +51,23 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <label class="form-label font-weight-bold">Nombre Completo <span class="text-danger">*</span></label>
-                            <input type="text" name="nombre_destinatario" class="form-control" required>
+                            <input type="text" name="nombre_destinatario" id="nombre_destinatario" class="form-control" placeholder="Ej: Juan Pérez" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label font-weight-bold">Cédula <span class="text-danger">*</span></label>
-                            <input type="text" name="cedula_destinatario" class="form-control" maxlength="10" required>
+                            <label class="form-label font-weight-bold">Cédula Ecuatoriana <span class="text-danger">*</span></label>
+                            <input type="text" name="cedula_destinatario" id="cedula_destinatario" class="form-control" maxlength="10" placeholder="Ej: 1712345678" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label font-weight-bold">Teléfono <span class="text-danger">*</span></label>
-                            <input type="text" name="telefono_destinatario" class="form-control" maxlength="15" required>
+                            <label class="form-label font-weight-bold">Teléfono (Celular) <span class="text-danger">*</span></label>
+                            <input type="text" name="telefono_destinatario" id="telefono_destinatario" class="form-control" maxlength="10" placeholder="Ej: 0991234567" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label font-weight-bold">Email</label>
-                            <input type="email" name="email_destinatario" class="form-control">
+                            <input type="email" name="email_destinatario" class="form-control" placeholder="correo@ejemplo.com">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label font-weight-bold">Dirección de Entrega <span class="text-danger">*</span></label>
-                            <input type="text" name="direccion_destino" class="form-control" required>
+                            <input type="text" name="direccion_destino" id="direccion_destino" class="form-control" placeholder="Ej: Av. Amazonas y Corella N34-12" required>
                         </div>
                     </div>
 
@@ -75,14 +75,13 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
                             <label class="form-label font-weight-bold">Descripción del paquete <span class="text-danger">*</span></label>
-                            <textarea name="descripcion" class="form-control" rows="2" required></textarea>
+                            <textarea name="descripcion" class="form-control" rows="2" placeholder="Describa brevemente el contenido..." required></textarea>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label font-weight-bold">Transporte Asignado</label>
                             <select id="transporte" name="transporte" class="form-select">
                                 <option value="">Sin asignar (Opcional)</option>
                                 {% for t in transportes %}
-                                <!-- Pasamos la capacidad en el atributo data-capacidad para validarlo con JS -->
                                 <option value="{{ t.id_transporte }}" data-capacidad="{{ t.capacidad_kg }}">{{ t.placa }} (Capacidad: {{ t.capacidad_kg }}kg)</option>
                                 {% endfor %}
                             </select>
@@ -98,15 +97,15 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label font-weight-bold">Peso (kg) <span class="text-danger">*</span></label>
-                            <input type="number" id="peso_kg" name="peso_kg" step="0.01" min="0.1" class="form-control" required>
+                            <input type="number" id="peso_kg" name="peso_kg" step="0.01" min="0.1" max="500" class="form-control" placeholder="Máx. 500 kg" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label font-weight-bold">Valor Declarado ($) <span class="text-danger">*</span></label>
-                            <input type="number" name="valor_declarado" step="0.01" min="0" class="form-control" required>
+                            <input type="number" name="valor_declarado" step="0.01" min="0" max="10000" class="form-control" placeholder="Máx. $10,000.00" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label font-weight-bold">Costo de Envío ($) <span class="text-danger">*</span></label>
-                            <input type="number" name="costo_envio" step="0.01" min="0" class="form-control" required>
+                            <input type="number" name="costo_envio" step="0.01" min="0" max="500" class="form-control" placeholder="Máx. $500.00" required>
                         </div>
                     </div>
 
@@ -131,57 +130,165 @@
 
 <script>
 $(document).ready(function() {
-    // 1. Regla personalizada: Origen y destino deben ser diferentes
+    // 1. Validación estricta de Cédula Ecuatoriana (Módulo 10)
+    $.validator.addMethod("cedulaEcuador", function(value, element) {
+        if (this.optional(element)) return true;
+        if (value.length !== 10 || !/^\d{10}$/.test(value)) return false;
+
+        var provincia = parseInt(value.substring(0, 2), 10);
+        if ((provincia < 1 || provincia > 24) && provincia !== 30) return false;
+
+        var tercerDigito = parseInt(value[2], 10);
+        if (tercerDigito >= 6) return false;
+
+        var digitoVerificador = parseInt(value[9], 10);
+        var suma = 0;
+        var digito = 0;
+
+        for (var i = 0; i < 9; i++) {
+            digito = parseInt(value[i], 10);
+            if (i % 2 === 0) {
+                digito *= 2;
+                if (digito > 9) digito -= 9;
+            }
+            suma += digito;
+        }
+
+        var resultado = suma % 10 === 0 ? 0 : 10 - (suma % 10);
+        return resultado === digitoVerificador;
+    }, "Por favor, ingrese un número de cédula ecuatoriano válido.");
+
+    // 2. Validación de Teléfono Celular (10 dígitos y empieza por 09)
+    $.validator.addMethod("telefonoCelularEcuador", function(value, element) {
+        return this.optional(element) || /^09\d{8}$/.test(value);
+    }, "El teléfono debe tener 10 dígitos y empezar estrictamente con '09'.");
+
+    // 3. Validación lógica de Nombre
+    $.validator.addMethod("nombreLogico", function(value, element) {
+        if (this.optional(element)) return true;
+        var soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value);
+        return soloLetras && value.trim().length >= 3;
+    }, "Ingrese un nombre válido (solo letras y espacios, mínimo 3 caracteres).");
+
+    // 4. Validación lógica de Dirección
+    $.validator.addMethod("direccionLogica", function(value, element) {
+        if (this.optional(element)) return true;
+        var tieneLetras = /[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(value);
+        return tieneLetras && value.trim().length >= 6;
+    }, "Ingrese una dirección válida (debe incluir nombres de calles o avenidas).");
+
+    // 5. Oficinas origen y destino distintas
     $.validator.addMethod("distintoOrigen", function(value, element) {
         var origen = $('#oficina_origen').val();
         return value !== origen;
     }, "La oficina de destino no puede ser la misma que la de origen.");
 
-    // 2. Regla personalizada: El peso no puede superar la capacidad del transporte
+    // 6. Validación de capacidad de transporte
     $.validator.addMethod("validaCapacidad", function(value, element) {
         var idTransporte = $('#transporte').val();
-        if (!idTransporte) return true; // Si no hay transporte, pasa la validación
-        
+        if (!idTransporte) return true;
         var capacidadMax = $('#transporte option:selected').data('capacidad');
         return parseFloat(value) <= parseFloat(capacidadMax);
     }, "El peso supera la capacidad máxima del transporte seleccionado.");
 
-    // 3. Configuración del formulario
+    // 7. Configuración de reglas y mensajes con todo en español
     $("#formEncomienda").validate({
         rules: {
+            cliente: {
+                required: true
+            },
+            oficina_origen: {
+                required: true
+            },
             oficina_destino: {
                 required: true,
                 distintoOrigen: true
+            },
+            nombre_destinatario: {
+                required: true,
+                nombreLogico: true
+            },
+            cedula_destinatario: {
+                required: true,
+                cedulaEcuador: true
+            },
+            telefono_destinatario: {
+                required: true,
+                telefonoCelularEcuador: true
+            },
+            email_destinatario: {
+                email: "Ingrese un correo electrónico válido."
+            },
+            direccion_destino: {
+                required: true,
+                direccionLogica: true
+            },
+            descripcion: {
+                required: true,
+                minlength: 5
             },
             peso_kg: {
                 required: true,
                 number: true,
                 min: 0.1,
-                validaCapacidad: true
+                max: 500
             },
             costo_envio: {
                 required: true,
                 number: true,
-                min: 0 // El costo debe ser positivo
+                min: 0,
+                max: 500
             },
             valor_declarado: {
                 required: true,
                 number: true,
-                min: 0
+                min: 0,
+                max: 10000
             }
         },
         messages: {
-            oficina_origen: "Seleccione el origen.",
+            cliente: {
+                required: "Por favor, seleccione un cliente remitente."
+            },
+            oficina_origen: {
+                required: "Por favor, seleccione la oficina de origen."
+            },
             oficina_destino: {
-                required: "Seleccione el destino."
+                required: "Por favor, seleccione la oficina de destino."
+            },
+            nombre_destinatario: {
+                required: "Por favor, ingrese el nombre del destinatario."
+            },
+            cedula_destinatario: {
+                required: "Por favor, ingrese la cédula del destinatario."
+            },
+            telefono_destinatario: {
+                required: "Por favor, ingrese el teléfono de contacto."
+            },
+            direccion_destino: {
+                required: "Por favor, ingrese la dirección de entrega."
+            },
+            descripcion: {
+                required: "Por favor, describa el contenido del paquete.",
+                minlength: "La descripción debe tener al menos 5 caracteres."
             },
             peso_kg: {
-                required: "Ingrese el peso.",
-                min: "El peso debe ser mayor a 0."
+                required: "Por favor, ingrese el peso del paquete.",
+                number: "Ingrese un valor numérico válido.",
+                min: "El peso debe ser mayor a 0.",
+                max: "El peso no puede exceder los 500 kg."
             },
             costo_envio: {
-                required: "Ingrese el costo de envío.",
-                min: "El costo no puede ser negativo."
+                required: "Por favor, ingrese el costo del envío.",
+                number: "Ingrese un valor numérico válido.",
+                min: "El costo no puede ser negativo.",
+                max: "El costo no puede superar los $500.00."
+            },
+            valor_declarado: {
+                required: "Por favor, ingrese el valor declarado.",
+                number: "Ingrese un valor numérico válido.",
+                min: "El valor no puede ser negativo.",
+                max: "El valor no puede superar los $10,000.00."
             }
         },
         errorElement: 'span',
@@ -197,7 +304,7 @@ $(document).ready(function() {
         }
     });
 
-    // Re-validar peso si el usuario cambia el transporte después de haber escrito el peso
+    // Re-validar peso si se cambia el transporte
     $('#transporte').on('change', function() {
         if ($('#peso_kg').val() !== "") {
             $('#peso_kg').valid();
