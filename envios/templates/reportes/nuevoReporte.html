@@ -21,7 +21,7 @@
 
                 <form action="/reportes/guardarReporte/" method="post">
                     {% csrf_token %}
-                    <input type="hidden" name="encomienda"
+                    <input type="hidden" name="encomienda_id"
                            value="{{ encomienda.id_encomienda }}">
 
                     <div class="mb-3">
