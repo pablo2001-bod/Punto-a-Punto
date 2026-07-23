@@ -1,6 +1,10 @@
 {% extends "plantillaprincipal.html" %}
 {% block titulo %}Reportes Generales | Punto a Punto{% endblock %}
 {% block contenido %}
+
+<!-- Importar Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
 <main class="main" style="padding-top: 105px;">
 <section class="section">
 <div class="container">
@@ -11,7 +15,6 @@
         <p class="text-muted mb-0">Generación de informes filtrados de encomiendas y estadísticas.</p>
     </div>
     <div>
-        <!-- Botón para imprimir o generar PDF (Usando la función nativa del navegador por ahora) -->
         <button onclick="window.print()" class="btn btn-outline-secondary">
             <i class="bi bi-printer"></i> Imprimir Reporte
         </button>
@@ -35,6 +38,33 @@
                 <h5 class="card-title"><i class="bi bi-cash-coin"></i> Total Ingresos (Costo de Envío)</h5>
                 <h2 class="display-5 fw-bold mb-0">${{ total_ingresos|floatformat:2 }}</h2>
                 <p class="card-text"><small>Suma de las encomiendas listadas</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sección de Gráficos Estadísticos -->
+<div class="row mb-4">
+    <!-- Gráfico 1: Encomiendas por Estado (Doughnut) -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-3"><b>ENCOMIENDAS POR ESTADO</b></h5>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="graficoEstadoEncomienda"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico 2: Ingresos por Oficina de Origen (Bar) -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title text-center mb-3"><b>TOP INGRESOS POR OFICINA (ORIGEN)</b></h5>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="graficoIngresosOficina"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -127,6 +157,63 @@
 </div>
 </section>
 </main>
+
+<!-- Scripts de Chart.js -->
+<script>
+    // Gráfico de Pastel / Doughnut para Estados
+    const etiquetasEstado = {{ etiquetas_estado_json|safe }};
+    const datosEstado = {{ datos_estado_json|safe }};
+
+    new Chart(document.getElementById('graficoEstadoEncomienda'), {
+        type: 'doughnut',
+        data: {
+            labels: etiquetasEstado,
+            datasets: [{
+                label: 'Cantidad',
+                data: datosEstado,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(153, 102, 255, 0.6)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Gráfico de Barras para Ingresos por Oficina
+    const etiquetasOficina = {{ etiquetas_oficina_json|safe }};
+    const datosOficina = {{ datos_oficina_json|safe }};
+
+    new Chart(document.getElementById('graficoIngresosOficina'), {
+        type: 'bar',
+        data: {
+            labels: etiquetasOficina,
+            datasets: [{
+                label: 'Ingresos ($)',
+                data: datosOficina,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 
 <style>
 /* Ocultar elementos innecesarios al imprimir */

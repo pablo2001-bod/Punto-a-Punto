@@ -12,6 +12,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 
+#Importando lo nuevo:
+import json
+from django.db.models import Count, Sum
+
 logger = logging.getLogger(__name__)
 
 
@@ -649,14 +653,78 @@ def resolverReporte(request, id):
 
 @user_passes_test(es_administrador, login_url="/seguimiento/seguimientoEncomienda/")
 def reportesGenerales(request):
-    encomiendas = Encomienda.objects.select_related('cliente', 'oficina_origen', 'oficina_destino').all().order_by('-fecha_registro')
+    # Obtener parámetros de filtro desde la petición GET
+    fecha_inicio = request.GET.get("fecha_inicio")
+    fecha_fin = request.GET.get("fecha_fin")
+    estado = request.GET.get("estado")
+    oficina = request.GET.get("oficina")
+
+    # QuerySet base optimizado
+    encomiendas = Encomienda.objects.select_related(
+        'cliente', 'oficina_origen', 'oficina_destino'
+    ).all().order_by('-fecha_registro')
+
+    # Aplicar filtros si existen
+    if fecha_inicio:
+        encomiendas = encomiendas.filter(fecha_registro__date__gte=fecha_inicio)
+    if fecha_fin:
+        encomiendas = encomiendas.filter(fecha_registro__date__lte=fecha_fin)
+    if estado:
+        encomiendas = encomiendas.filter(estado=estado)
+    if oficina:
+        encomiendas = encomiendas.filter(
+            models.Q(oficina_origen_id=oficina) | models.Q(oficina_destino_id=oficina)
+        )
+
+    # KPIs Principales
     total_encomiendas = encomiendas.count()
     total_ingresos = encomiendas.aggregate(total=Sum('costo_envio'))['total'] or 0
-    return render(request, "reportes/reportesGenerales.html", {
+
+    # -------------------------------------------------------------
+    # Datos para los Gráficos de Chart.js adaptados a Encomiendas
+    # -------------------------------------------------------------
+    
+    # Gráfico 1: Encomiendas por Estado
+    encomiendas_por_estado = (
+        encomiendas.values('estado')
+        .annotate(total=Count('id_encomienda'))
+        .order_by('-total')
+    )
+    # Mapear estados a sus nombres legibles
+    estados_dict = dict(Encomienda.ESTADOS_ENCOMIENDA)
+    etiquetas_estado = [estados_dict.get(item['estado'], item['estado']) for item in encomiendas_por_estado]
+    datos_estado = [item['total'] for item in encomiendas_por_estado]
+
+    # Gráfico 2: Ingresos o Encomiendas por Oficina de Origen
+    encomiendas_por_oficina = (
+        encomiendas.values('oficina_origen__ciudad', 'oficina_origen__nombre')
+        .annotate(total_ingresos=Sum('costo_envio'))
+        .order_by('-total_ingresos')[:5] # Top 5 oficinas
+    )
+    etiquetas_oficina = [f"{item['oficina_origen__ciudad']} - {item['oficina_origen__nombre']}" for item in encomiendas_por_oficina]
+    datos_oficina = [float(item['total_ingresos'] or 0) for item in encomiendas_por_oficina]
+
+    # Contexto final
+    contexto = {
         "encomiendas": encomiendas,
         "total_encomiendas": total_encomiendas,
         "total_ingresos": total_ingresos,
-    })
+        "estados_encomienda": Encomienda.ESTADOS_ENCOMIENDA,
+        "oficinas": Oficina.objects.all().order_by("ciudad"),
+        "filtros": {
+            "fecha_inicio": fecha_inicio or "",
+            "fecha_fin": fecha_fin or "",
+            "estado": estado or "",
+            "oficina": oficina or "",
+        },
+        # JSON para Chart.js
+        'etiquetas_estado_json': json.dumps(etiquetas_estado),
+        'datos_estado_json': json.dumps(datos_estado),
+        'etiquetas_oficina_json': json.dumps(etiquetas_oficina),
+        'datos_oficina_json': json.dumps(datos_oficina),
+    }
+
+    return render(request, "reportes/reportesGenerales.html", contexto)
 
 # ==========================================
 # MÓDULO: Notificaciones (Solo Admin)
